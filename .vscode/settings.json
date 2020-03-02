@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/8d1ba550-cc1e-4f94-8349-bae7af661c58/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/cutieplushie",
+    "appService.deploySubpath": ""
+}
