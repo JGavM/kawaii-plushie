@@ -1,5 +1,5 @@
 {
-  "name": "kawaii-plushie",
+  "name": "cutie-plushie",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JGavM/kawaii-plushie.git"
+    "url": "git+https://github.com/JGavM/cutie-plushie.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/JGavM/kawaii-plushie/issues"
+    "url": "https://github.com/JGavM/cutie-plushie/issues"
   },
-  "homepage": "https://github.com/JGavM/kawaii-plushie#readme",
+  "homepage": "https://github.com/JGavM/cutie-plushie#readme",
   "dependencies": {
     "express": "^4.17.1"
   }

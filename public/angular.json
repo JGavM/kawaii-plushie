@@ -3,7 +3,7 @@
   "version": 1, 
   "newProjectRoot": "projects",
   "projects": {
-    "kawaii-plushie": {
+    "cutie-plushie": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/kawaii-plushie",
+            "outputPath": "dist/cutie-plushie",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -62,18 +62,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "kawaii-plushie:build"
+            "browserTarget": "cutie-plushie:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "kawaii-plushie:build:production"
+              "browserTarget": "cutie-plushie:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "kawaii-plushie:build"
+            "browserTarget": "cutie-plushie:build"
           }
         },
         "test": {
@@ -110,15 +110,15 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "kawaii-plushie:serve"
+            "devServerTarget": "cutie-plushie:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "kawaii-plushie:serve:production"
+              "devServerTarget": "cutie-plushie:serve:production"
             }
           }
         }
       }
     }},
-  "defaultProject": "kawaii-plushie"
+  "defaultProject": "cutie-plushie"
 }
