@@ -106,7 +106,7 @@ function AppComponent_pre_90_Template(rf, ctx) { if (rf & 1) {
 } }
 class AppComponent {
     constructor() {
-        this.title = 'kawaii-plushie';
+        this.title = 'cutie-plushie';
     }
 }
 AppComponent.ɵfac = function AppComponent_Factory(t) { return new (t || AppComponent)(); };
