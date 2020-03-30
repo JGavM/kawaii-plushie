@@ -32,7 +32,7 @@ app.get('/api/v1/web/avatars', function (req, res) {
     let request = new mssql.Request();
        
     // Query to the database and get the records
-    request.query('SELECT * FROM Avatars', function (err, records) {
+    request.query("SELECT * FROM Avatars", function (err, records) {
         
         if (err){
           console.log(err);
@@ -56,7 +56,7 @@ app.get('/api/v1/web/avatars/:avatarId', function (req, res) {
     let avatarId = req.params.avatarId;
        
     // Query to the database and get the records
-    request.query('SELECT * FROM Avatars WHERE "Avatar_ID" = ' + avatarId, function (err, records) {
+    request.query("SELECT * FROM dbo.Avatars WHERE Avatar_ID = '" + avatarId + "';", function (err, records) {
         
         if (err){
           console.log(err);
