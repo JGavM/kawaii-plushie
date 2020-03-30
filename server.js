@@ -15,7 +15,7 @@ app.use(express.static(__dirname + "/public/dist/cutie-plushie"));
  * Data View API
  */
 
-app.get('/api/v1/web/dataview/getavatars/', function (req, res) {
+app.get('/api/v1/web/dataview/getavatars', function (req, res) {
   mssql.connect(dataBaseConfig, function (err) {
     
     if (err){
