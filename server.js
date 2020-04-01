@@ -147,7 +147,7 @@ app.get('/api/v1/web/currencyrates/:currencyId', function (req, res) {
                                   (today.getDate()>9?today.getDate():"0"+today.getDate())
        
     // Query to the database and get the records
-    request.query("INSERT INTO dbo.Currency_Rates VALUES('" + 
+    request.query("INSERT INTO dbo.Customers VALUES('" + 
     customerId +  "','" + 
     customerName + "','" + 
     customerLastName + "','" + 
