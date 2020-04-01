@@ -19,6 +19,7 @@
   "homepage": "https://github.com/JGavM/cutie-plushie#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "mssql": "^6.1.0"
+    "mssql": "^6.1.0",
+    "sjcl": "^1.0.8"
   }
 }
