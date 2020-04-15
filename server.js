@@ -2,6 +2,9 @@ const express = require("express");
 const mssql = require("mssql");
 const sjcl = require("sjcl");
 const bodyParser = require("body-parser");
+const jwt = require("jsonwebtoken");
+const passport = require("passport");
+const jwtStrategry  = require("./strategies/jwt");
 const app = express();
 
 const dataBaseConfig ={
@@ -13,6 +16,10 @@ const dataBaseConfig ={
 
 app.use(express.static(__dirname + "/public/dist/cutie-plushie"));
 app.use( bodyParser.json() );
+
+passport.use(jwtStrategry);
+
+const management = require("./apis/management")(app,mssql,sjcl,jwt,passport,dataBaseConfig);
 
 /**
  * -----------------------------------------
@@ -315,10 +322,6 @@ app.post('/api/v1/web/customers/', function (req, res) {
  // Update address
 app.put('/api/v1/web/addresses/:addressId', function (req, res) {
   mssql.connect(dataBaseConfig, function (err) {
-    
-    if (err){
-      console.log(err);
-    }
 
     if (err){
       console.log(err);
@@ -360,253 +363,34 @@ app.put('/api/v1/web/addresses/:addressId', function (req, res) {
   });
 });
 
-/**
- * -----------------------------------------
- * Manager API v1
- * -----------------------------------------
- */
-
-
- /**
- *  GET Methods
- */
-
- // Get sales
-app.get('/api/v1/management/sales', function (req, res) {
+ // Update avatar
+ app.put('/api/v1/web/customers/:customerId/avatar/', function (req, res) {
   mssql.connect(dataBaseConfig, function (err) {
-    
+
     if (err){
       console.log(err);
+      res.send(err);
     }
 
     let request = new mssql.Request();
-    let page = parseInt(req.query.page);  
-    // Query to the database and get the records
-    request.query("SELECT	s.Sale_ID, s.Order_ID, s.Sale_Applied_Discount, s.Sale_Date, s.Delivery_ID, "+
-		"o.Customer_ID, o.Order_Status, "+
-		"cus.Customer_Last_Name, cus.Customer_Name,"+
-		"a.Article_ID, "+
-		"p.Product_Name, p.Product_Unit_Price_MXN, "+
-		"cat.Category_Name, "+
-		"d.Delivery_Date, d.Expected_Arrival_Date, d.Actual_Arrival_Date "+
-    "FROM	(((((dbo.Sales AS s " +
-		"INNER JOIN dbo.Orders AS o ON s.Order_ID = o.Order_ID) "+
-		"INNER JOIN dbo.Customers AS cus ON o.Customer_ID = cus.Customer_ID) "+
-		"INNER JOIN dbo.Articles AS a ON s.Article_ID = a.Article_ID) "+
-		"INNER JOIN dbo.Products AS p ON a.Product_ID = p.Product_ID) "+
-		"INNER JOIN dbo.Categories AS cat ON p.Category_ID = cat.Category_ID) "+
-		"INNER JOIN dbo.Deliveries AS d ON s.Delivery_ID = d.Delivery_ID "+
-    "ORDER BY s.Order_ID, s.Sale_ID "+
-    "OFFSET 100 * " + (page-1) + " ROWS "+
-    "FETCH NEXT 100 ROWS ONLY;", 
-    function (err, records) {
-        
-      if (err){
-        console.log(err);
-        res.send(err);
-      }
 
-      // Send records as a response
-      let sales = [];
-      for(let sale of records.recordset){
-        saleJSON = {
-          saleId: sale.Sale_ID,
-          date: sale.Sale_Date,
-          discount: sale.Sale_Applied_Discount,
-          order: {
-            id: sale.Order_ID,
-            status: sale.Order_Status,
-            customer: {
-              id: sale.Customer_ID,
-              name: sale.Customer_Name,
-              lastName: sale.Customer_Last_Name
-            }
-          },
-          article: {
-            id: sale.Article_ID,
-            name: sale.Product_Name,
-            price: sale.Product_Unit_Price_MXN,
-            category: sale.Category_ID
-          },
-          delivery: {
-            id: sale.Delivery_ID,
-            deliveryDate: sale.Delivery_Date,
-            expectedArrivalDate: sale.Expected_Arrival_Date,
-            actualArrivalDate: sale.Actual_Arrival_Date
-          }
-        };
-        sales.push(saleJSON);
-      }
-      res.send(sales);
-    });
-  });
-});
-
-// Get suppliers
-app.get('/api/v1/management/suppliers/', function (req, res) {
-  mssql.connect(dataBaseConfig, function (err) {
-    
-    if (err){
-      console.log(err);
-    }
-
-    let request = new mssql.Request();
-    let page = parseInt(req.query.page);  
-    // Query to the database and get the records
-    request.query("SELECT	* FROM dbo.Suppliers;", 
-    function (err, records) {
-        
-      if (err){
-        console.log(err);
-        res.send(err);
-      }
-
-      // Send records as a response
-      res.send(records.recordset);
-    });
-  });
-});
-
-// Get supplier by ID
-app.get('/api/v1/management/suppliers/:supplierId', function (req, res) {
-  mssql.connect(dataBaseConfig, function (err) {
-    
-    if (err){
-      console.log(err);
-    }
-
-    let request = new mssql.Request();
-    let supplierId = req.params.supplierId;  
+    let customerId = req.params.customerId;
+    let avatarId = req.body.avatarId;
 
     // Query to the database and get the records
-    request.query("SELECT	* FROM dbo.Suppliers WHERE Supplier_ID = '" + supplierId + "';", 
+    request.query("UPDATE dbo.Customers SET " + 
+    "Avatar_ID = '" + avatarId + "' " + 
+    "WHERE Customer_ID = '" + customerId + "';", 
     function (err, records) {
         
-      if (err){
-        console.log(err);
-        res.send(err);
-      }
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
 
-      // Send records as a response
-      res.send(records.recordset[0]);
-    });
-  });
-});
-
-/**
- *  POST Methods
- */
-
-// Create new product
-app.post('/api/v1/management/products/', function (req, res) {
-  mssql.connect(dataBaseConfig, function (err) {
-    
-    if (err){
-      console.log(err);
-    }
-
-    let request = new mssql.Request();
-    request.query("SELECT TOP 1 Product_ID FROM dbo.Products ORDER BY Product_ID DESC;", function (err, records) {
+        // Send records as a response
+        res.send(true);
         
-      if (err){
-        console.log(err);
-        res.send(err);
-      }
-
-      // Get next available ID
-      let productId;
-      if(records.recordset.length>0){
-        let latestId = records.recordset[0]["Product_ID"];
-        productId = getNextID(latestId, "p", 10);
-      } else {
-        productId = "p000000000";
-      }  
-      
-      let productName = req.body.name;
-      let productDescription = req.body.description;
-      let productUnitPrice = req.body.unitPrice;
-      let productIcon = req.body.icon;
-      let supplierId = req.body.supplier;
-      let categoryId = req.body.category;
-        
-      // Query to the database and get the records
-      request = new mssql.Request();
-      request.query("INSERT INTO dbo.Products VALUES('" + 
-      productId +  "','" + 
-      productName + "','" + 
-      productDescription + "'," + 
-      productUnitPrice + ",'" + 
-      productIcon + "'," + 
-      "1,'" + 
-      supplierId + "','" + 
-      categoryId + "'," + 
-      "0);", 
-      function (err, records) {
-          
-          if (err){
-            console.log(err);
-            res.send(err);
-          }
-
-          // Send records as a response
-          res.send(true);
-          
-      });
-    });
-  });
-});
-
-// Add new supplier
-app.post('/api/v1/management/suppliers/', function (req, res) {
-  mssql.connect(dataBaseConfig, function (err) {
-    
-    if (err){
-      console.log(err);
-    }
-
-    let request = new mssql.Request();
-    request.query("SELECT TOP 1 Supplier_ID FROM dbo.Suppliers ORDER BY Supplier_ID DESC;", function (err, records) {
-        
-      if (err){
-        console.log(err);
-        res.send(err);
-      }
-
-      // Get next available ID
-      let supplierId;
-      if(records.recordset.length>0){
-        let latestId = records.recordset[0]["Supplier_ID"];
-        supplierId = getNextID(latestId, "s", 10);
-      } else {
-        supplierId = "s000000000";
-      }  
-      
-      // Parse the JSON body of the request
-      let supplierName = req.body.name;
-      let supplierContactName = req.body.contactName;
-      let supplierPhoneNumber = req.body.phoneNumber;
-      let supplierEmail = req.body.email;
-        
-      // Query to the database and get the records
-      request = new mssql.Request();
-      request.query("INSERT INTO dbo.Suppliers VALUES('" + 
-      supplierId +  "','" + 
-      supplierName + "','" + 
-      supplierContactName + "','" + 
-      supplierPhoneNumber + "','" + 
-      supplierEmail + "'," + 
-      "1);", 
-      function (err, records) {
-          
-          if (err){
-            console.log(err);
-            res.send(err);
-          }
-
-          // Send records as a response
-          res.send(true);
-          
-      });
     });
   });
 });
