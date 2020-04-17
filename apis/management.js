@@ -30,6 +30,79 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
  *  GET Methods
  */
 
+// Get distributors
+app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+      
+      if (err){
+        console.log(err);
+      }
+  
+      let request = new mssql.Request(); 
+      // Query to the database and get the records
+      request.query("SELECT	* FROM dbo.Distributors;", 
+      function (err, records) {
+          
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
+  
+        // Send records as a response
+        let distributors = [];
+        for(let distributor of records.recordset){
+        distributorJSON = {
+            distributorId: distributor.Distributor_ID,
+            distributorName: distributor.Distributor_Name,
+            distributorContactName: distributor.Distributor_Contact_Name,
+            distributorPhoneNumber: distributor.Distributor_Phone_Number,
+            distributorMail: distributor.Distributor_Mail,
+            active: distributor.Active
+          };
+          distributors.push(distributorJSON);
+        }
+        res.send(distributors);
+      });
+    });
+  });
+
+  // Get distributor by ID
+  app.get('/api/v1/management/distributors/:distributorId', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+      
+      if (err){
+        console.log(err);
+      }
+  
+      let request = new mssql.Request();
+      let distributorId = req.params.distributorId;  
+      // Query to the database and get the records
+      request.query("SELECT	* FROM dbo.Distributors WHERE Distributor_ID = '" + distributorId + "';", 
+      function (err, records) {
+          
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
+  
+        // Send records as a response
+        let distributors = [];
+        for(let distributor of records.recordset){
+        distributorJSON = {
+            distributorId: distributor.Distributor_ID,
+            distributorName: distributor.Distributor_Name,
+            distributorContactName: distributor.Distributor_Contact_Name,
+            distributorPhoneNumber: distributor.Distributor_Phone_Number,
+            distributorMail: distributor.Distributor_Mail,
+            active: distributor.Active
+          };
+          distributors.push(distributorJSON);
+        }
+        res.send(distributors);
+      });
+    });
+  });
+
  //Get products by page
  app.get('/api/v1/management/products/', passport.authenticate('jwt', { session: false }), function (req, res) {
     mssql.connect(dataBaseConfig, function (err) {
@@ -338,6 +411,66 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
    *  POST Methods
    */
   
+  // Add new distributor
+  app.post('/api/v1/management/distributors/', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+      
+      if(req.user.userGroup != "ADMIN"){
+        res.status(401).send("Unauthorized");
+        return;
+      }
+  
+      if (err){
+        console.log(err);
+      }
+  
+      let request = new mssql.Request();
+      request.query("SELECT TOP 1 Distributor_ID FROM dbo.Distributors ORDER BY Distributor_ID DESC;", function (err, records) {
+          
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
+  
+        // Get next available ID
+        let distributorId;
+        if(records.recordset.length>0){
+          let latestId = records.recordset[0]["Distributor_ID"];
+          distributorId = getNextID(latestId, "d", 10);
+        } else {
+          distributorId = "d000000000";
+        }  
+        
+        // Parse the JSON body of the request
+        let distributorName = req.body.distributorName;
+        let distributorContactName = req.body.distributorContactName;
+        let distributorPhoneNumber = req.body.distributorPhoneNumber;
+        let distributorMail = req.body.distributorMail;
+          
+        // Query to the database and get the records
+        request = new mssql.Request();
+        request.query("INSERT INTO dbo.Distributors VALUES('" + 
+        distributorId +  "','" + 
+        distributorName + "','" + 
+        distributorContactName + "','" + 
+        distributorPhoneNumber + "','" + 
+        distributorMail + "'," + 
+        "1);", 
+        function (err, records) {
+            
+            if (err){
+              console.log(err);
+              res.send(err);
+            }
+  
+            // Send records as a response
+            res.send(true);
+            
+        });
+      });
+    });
+  });
+
   // Login
   app.post('/api/v1/management/login', function(req, res){
     mssql.connect(dataBaseConfig, function(err){
@@ -482,10 +615,10 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         }  
         
         // Parse the JSON body of the request
-        let supplierName = req.body.supplierNname;
+        let supplierName = req.body.supplierName;
         let supplierContactName = req.body.supplierContactName;
         let supplierPhoneNumber = req.body.supplierPhoneNumber;
-        let supplierEmail = req.body.supplierEmail;
+        let supplierMail = req.body.supplierMail;
           
         // Query to the database and get the records
         request = new mssql.Request();
@@ -494,7 +627,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         supplierName + "','" + 
         supplierContactName + "','" + 
         supplierPhoneNumber + "','" + 
-        supplierEmail + "'," + 
+        supplierMail + "'," + 
         "1);", 
         function (err, records) {
             
@@ -558,6 +691,51 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
   /*
   *  PUT Methods
   */
+
+    // Update a supplier
+    app.put('/api/v1/management/distributors/:distributorId', passport.authenticate('jwt', { session: false }), function (req, res) {
+        mssql.connect(dataBaseConfig, function (err) {
+    
+        if(req.user.userGroup != "ADMIN"){
+            res.status(401).send("Unauthorized");
+            return;
+        }
+
+        if (err){
+            console.log(err);
+            res.send(err);
+        }
+  
+        let request = new mssql.Request();
+    
+        let distributorId = req.params.distributorId;
+        let distributorName = req.body.distributorName;
+        let distributorContactName = req.body.distributorContactName;
+        let distributorPhoneNumber = req.body.distributorPhoneNumber;
+        let distributorMail = req.body.distributorMail;
+        let active = req.body.active;
+            
+        // Query to the database and get the records
+        request.query("UPDATE dbo.Distributors SET " + 
+        "Distributor_Name = '" + distributorName + "', " + 
+        "Distributor_Contact_Name = '" + distributorContactName + "', " + 
+        "Distributor_Phone_Number = '" + distributorPhoneNumber + "', " + 
+        "Distributor_Mail = '" + distributorMail + "', " + 
+        "Active = '" + active + "' " +
+        "WHERE Distributor_ID = '" + distributorId + "';", 
+        function (err, records) {
+            
+            if (err){
+                console.log(err);
+                res.send(err);
+            }
+    
+            // Send response if successful
+            res.send(true);
+          
+            });
+        });
+    });
 
     // Update a product
     app.put('/api/v1/management/products/:productId', passport.authenticate('jwt', { session: false }), function (req, res) {
