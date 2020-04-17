@@ -5,6 +5,25 @@
  * -----------------------------------------
  */
 
+/**
+ * -----------------------------------------
+ * Useful functions
+ * -----------------------------------------
+ */
+
+// This function gets the next available ID for a new record using a specific prefix.
+function getNextID(latestId, prefix, totalLength){
+    var targetId = latestId.substring(1);
+    let IdNumber = parseInt(targetId);
+    IdNumber +=  1;
+    targetId = IdNumber.toString();
+    while(targetId.length != (totalLength - prefix.length)){
+      targetId = "0" + targetId;
+    }
+    targetId = prefix + targetId;
+    return targetId;
+}
+
 module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
  
 /**
