@@ -44,11 +44,12 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         
       // Query to the database and get the records
       request.query(
-      "SELECT p.Product_ID, p.Product_Name, p.Product_Description, p.Product_Unit_Price_MXN, p.Product_Icon, p.Active, p.Product_Active_Discount,"+
+      "SELECT p.Product_ID, p.Product_Name, p.Product_Description, p.Product_Unit_Price_MXN, p.Product_Icon, p.Active, p.Product_Active_Discount, p.Supplier_ID, p.Category_ID,"+
       "s.Supplier_Name, c.Category_Name "+
       "FROM (dbo.Products AS p INNER JOIN dbo.Suppliers AS s ON p.Supplier_ID = s.Supplier_ID) "+
       "INNER JOIN dbo.Categories AS c ON p.Category_ID = c.Category_ID "+
-      "OFFSET " + offset + " * " + page + "ROWS FETCH NEXT " + offset + " ROWS ONLY;", 
+      "ORDER BY p.Product_ID " +
+      "OFFSET " + offset + " * " + (page-1) + " ROWS FETCH NEXT " + offset + " ROWS ONLY;", 
       function (err, records) {
           
           if (err){
@@ -57,7 +58,28 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
           }
   
           // Send records as a response
-          res.send(records.recordset[0]);
+          let products = [];
+        for(let product of records.recordset){
+          productJSON = {
+            productId: product.Product_ID,
+            productName: product.Product_Name,
+            productDescription: product.Product_Description,
+            productUnitPriceMXN: product.Product_Unit_Price_MXN,
+            productIcon: product.Product_Icon,
+            active: product.Active,
+            productActiveDiscount: product.Product_Active_Discount,
+            supplier: {
+              supplierId: product.Supplier_ID,
+              supplierName: product.Supplier_Name,
+            },
+            category: {
+              categoryId: product.Category_ID,
+              categoryName: product.Category_Name,
+            }
+          };
+          products.push(productJSON);
+        }
+        res.send(products);
           
       });
     });
@@ -75,7 +97,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         
       // Query to the database and get the records
       request.query(
-      "SELECT p.Product_ID, p.Product_Name, p.Product_Description, p.Product_Unit_Price_MXN, p.Product_Icon, p.Active, p.Product_Active_Discount,"+
+      "SELECT p.Product_ID, p.Product_Name, p.Product_Description, p.Product_Unit_Price_MXN, p.Product_Icon, p.Active, p.Product_Active_Discount, p.Supplier_ID, p.Category_ID, "+
       "s.Supplier_Name, c.Category_Name "+
       "FROM (dbo.Products AS p INNER JOIN dbo.Suppliers AS s ON p.Supplier_ID = s.Supplier_ID) "+
       "INNER JOIN dbo.Categories AS c ON p.Category_ID = c.Category_ID WHERE Product_ID = '" + productId + "';", 
@@ -86,8 +108,82 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
             res.send(err);
           }
   
+          let products = [];
+        for(let product of records.recordset){
+          productJSON = {
+            productId: product.Product_ID,
+            productName: product.Product_Name,
+            productDescription: product.Product_Description,
+            productUnitPriceMXN: product.Product_Unit_Price_MXN,
+            productIcon: product.Product_Icon,
+            active: product.Active,
+            productActiveDiscount: product.Product_Active_Discount,
+            supplier: {
+              supplierId: product.Supplier_ID,
+              supplierName: product.Supplier_Name,
+            },
+            category: {
+              categoryId: product.Category_ID,
+              categoryName: product.Category_Name,
+            }
+          };
+          products.push(productJSON);
+        }
+        res.send(products);
+      });
+    });
+  });
+
+  //Get top n most sold products
+ app.get('/api/v1/management/mostsoldproducts/', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+      
+      if (err){
+        console.log(err);
+      }
+  
+      let request = new mssql.Request();
+      let top = parseInt(req.query.top);
+        
+      // Query to the database and get the records
+      request.query(
+      "SELECT q.Product_ID, pp.Product_Name, c.Category_Name, q.Sales FROM "+
+      "((SELECT TOP " + top + " p.Product_ID, COUNT(s.Sale_ID) AS Sales "+
+      "FROM ((dbo.Products AS p INNER JOIN dbo.Articles AS a on p.Product_ID = a.Product_ID) "+
+      "INNER JOIN dbo.Sales AS s ON a.Article_ID = s.Article_ID) "+
+      "WHERE p.Active = 1 "+
+      "GROUP BY p.Product_ID "+
+      "ORDER BY sales) AS q INNER JOIN dbo.Products AS pp ON q.Product_ID = pp.Product_ID) "+
+      "INNER JOIN dbo.Categories AS c ON c.Category_ID = pp.Category_ID;", 
+      function (err, records) {
+          
+          if (err){
+            console.log(err);
+            res.send(err);
+          }
+  
           // Send records as a response
-          res.send(records.recordset[0]);
+          let products = [];
+        for(let product of records.recordset){
+          productJSON = {
+            productId: product.Product_ID,
+            productName: product.Product_Name,
+            productDescription: product.Product_Description,
+            productUnitPriceMXN: product.Product_Unit_Price_MXN,
+            productIcon: product.Product_Icon,
+            active: product.Active,
+            productActiveDiscount: product.Product_Active_Discount,
+            supplier: {
+              supplierId: product.Supplier_ID,
+              supplierName: product.Supplier_Name,
+            },
+            category: {
+              categoryId: product.Category_ID,
+              categoryName: product.Category_Name,
+            }
+          };
+          products.push(productJSON);
+        }
           
       });
     });
@@ -107,8 +203,8 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       request.query("SELECT	s.Sale_ID, s.Order_ID, s.Sale_Applied_Discount, s.Sale_Date, s.Delivery_ID, "+
           "o.Customer_ID, o.Order_Status, "+
           "cus.Customer_Last_Name, cus.Customer_Name,"+
-          "a.Article_ID, "+
-          "p.Product_Name, p.Product_Unit_Price_MXN, "+
+          "a.Article_ID, a.Product_ID, "+
+          "p.Product_Name, p.Product_Unit_Price_MXN, p.Category_ID, "+
           "cat.Category_Name, "+
           "d.Delivery_Date, d.Expected_Arrival_Date, d.Actual_Arrival_Date "+
       "FROM	(((((dbo.Sales AS s " +
@@ -133,25 +229,31 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         for(let sale of records.recordset){
           saleJSON = {
             saleId: sale.Sale_ID,
-            date: sale.Sale_Date,
-            discount: sale.Sale_Applied_Discount,
+            saleDate: sale.Sale_Date,
+            saleAppliedDiscount: sale.Sale_Applied_Discount,
             order: {
-              id: sale.Order_ID,
-              status: sale.Order_Status,
+              orderId: sale.Order_ID,
+              orderStatus: sale.Order_Status,
               customer: {
-                id: sale.Customer_ID,
-                name: sale.Customer_Name,
-                lastName: sale.Customer_Last_Name
+                customerId: sale.Customer_ID,
+                customerName: sale.Customer_Name,
+                customerLastName: sale.Customer_Last_Name
               }
             },
             article: {
-              id: sale.Article_ID,
-              name: sale.Product_Name,
-              price: sale.Product_Unit_Price_MXN,
-              category: sale.Category_ID
+              articleId: sale.Article_ID,
+              product: {
+                productId: sale.Product_ID,
+                productName: sale.Product_Name,
+                productPrice: sale.Product_Unit_Price_MXN,
+                category: {
+                    categoryId: sale.Category_ID,
+                    categoryName: sale.Category_Name
+                }
+              }
             },
             delivery: {
-              id: sale.Delivery_ID,
+              deliveryId: sale.Delivery_ID,
               deliveryDate: sale.Delivery_Date,
               expectedArrivalDate: sale.Expected_Arrival_Date,
               actualArrivalDate: sale.Actual_Arrival_Date
@@ -184,7 +286,19 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         }
   
         // Send records as a response
-        res.send(records.recordset);
+        let suppliers = [];
+        for(let supplier of records.recordset){
+          supplierJSON = {
+            supplierId: supplier.Supplier_ID,
+            supplierName: supplier.Supplier_Name,
+            supplierContactName: supplier.Supplier_Contact_Name,
+            supplierPhoneNumber: supplier.Supplier_Phone_Number,
+            supplierMail: supplier.Supplier_Mail,
+            active: supplier.Active
+          };
+          suppliers.push(supplierJSON);
+        }
+        res.send(suppliers);
       });
     });
   });
@@ -210,7 +324,19 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         }
   
         // Send records as a response
-        res.send(records.recordset[0]);
+        let suppliers = [];
+        for(let supplier of records.recordset){
+          supplierJSON = {
+            supplierId: supplier.Supplier_ID,
+            supplierName: supplier.Supplier_Name,
+            supplierContactName: supplier.Supplier_Contact_Name,
+            supplierPhoneNumber: supplier.Supplier_Phone_Number,
+            supplierMail: supplier.Supplier_Mail,
+            active: supplier.Active
+          };
+          suppliers.push(supplierJSON);
+        }
+        res.send(suppliers);
       });
     });
   });
@@ -256,9 +382,9 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
           let secret = "SECRET_KEY"
           let token = jwt.sign({ userKey }, secret, options);
           res.send({
-            name: userName,
-            lastName:  userLastName,
-            permissionsGroup: userGroup,
+            userName: userName,
+            userLastName:  userLastName,
+            userGroup: userGroup,
             token
           });
         }
@@ -298,12 +424,12 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
           productId = "p000000000";
         }  
         
-        let productName = req.body.name;
-        let productDescription = req.body.description;
-        let productUnitPrice = req.body.unitPrice;
-        let productIcon = req.body.icon;
-        let supplierId = req.body.supplier;
-        let categoryId = req.body.category;
+        let productName = req.body.productName;
+        let productDescription = req.body.productDescription;
+        let productUnitPrice = req.body.productUnitPriceMXN;
+        let productIcon = req.body.productIcon;
+        let supplierId = req.body.supplierId;
+        let categoryId = req.body.categoryId;
           
         // Query to the database and get the records
         request = new mssql.Request();
@@ -363,10 +489,10 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         }  
         
         // Parse the JSON body of the request
-        let supplierName = req.body.name;
-        let supplierContactName = req.body.contactName;
-        let supplierPhoneNumber = req.body.phoneNumber;
-        let supplierEmail = req.body.email;
+        let supplierName = req.body.supplierNname;
+        let supplierContactName = req.body.supplierContactName;
+        let supplierPhoneNumber = req.body.supplierPhoneNumber;
+        let supplierEmail = req.body.supplierEmail;
           
         // Query to the database and get the records
         request = new mssql.Request();
@@ -469,11 +595,11 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         request.query("UPDATE dbo.Products SET " + 
         "Product_Name = '" + productName + "', " + 
         "Product_Description = '" + productDescription + "', " + 
-        "Product_Unit_Price_MXN = '" + productUnitPrice + "', " + 
-        "Proudct_Icon = '" + productIcon + "', " + 
+        "Product_Unit_Price_MXN = " + productUnitPrice + ", " + 
+        "Product_Icon = '" + productIcon + "', " + 
         "Active = '" + active + "', " + 
         "Supplier_ID = '" + supplierId + "', " + 
-        "Product_Active_Discount = '" + productActiveDiscount + "' " + 
+        "Product_Active_Discount = " + productActiveDiscount + " " + 
         "WHERE Product_ID = '" + productId + "';", 
         function (err, records) {
             
@@ -490,7 +616,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
     });
 
     // Update a supplier
-    app.put('/api/v1/management/supplier/:supplierId', passport.authenticate('jwt', { session: false }), function (req, res) {
+    app.put('/api/v1/management/suppliers/:supplierId', passport.authenticate('jwt', { session: false }), function (req, res) {
         mssql.connect(dataBaseConfig, function (err) {
     
         if(req.user.userGroup != "ADMIN"){
@@ -507,19 +633,19 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
     
         let supplierId = req.params.supplierId;
         let supplierName = req.body.supplierName;
-        let supplierContactName = req.body.productDescription;
-        let supplierPhoneNumber = req.body.productUnitPrice;
-        let supplierMail = req.body.productIcon;
+        let supplierContactName = req.body.supplierContactName;
+        let supplierPhoneNumber = req.body.supplierPhoneNumber;
+        let supplierMail = req.body.supplierMail;
         let active = req.body.active;
             
         // Query to the database and get the records
-        request.query("UPDATE dbo.Products SET " + 
-        "Supplier_Name = '" + productName + "', " + 
-        "Supplier_Contact_Name = '" + productDescription + "', " + 
-        "Supplier_Phone_Number = '" + productUnitPrice + "', " + 
-        "Supplier_Mail = '" + productIcon + "', " + 
+        request.query("UPDATE dbo.Suppliers SET " + 
+        "Supplier_Name = '" + supplierName + "', " + 
+        "Supplier_Contact_Name = '" + supplierContactName + "', " + 
+        "Supplier_Phone_Number = '" + supplierPhoneNumber + "', " + 
+        "Supplier_Mail = '" + supplierMail + "', " + 
         "Active = '" + active + "' " +
-        "WHERE Product_ID = '" + productId + "';", 
+        "WHERE Supplier_ID = '" + supplierId + "';", 
         function (err, records) {
             
             if (err){
@@ -527,7 +653,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
                 res.send(err);
             }
     
-            // Send records as a response
+            // Send response if successful
             res.send(true);
           
             });
