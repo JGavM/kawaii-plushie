@@ -1,4 +1,3 @@
-
 /**
  * -----------------------------------------
  * Manager API v1
@@ -495,7 +494,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
           let userPass = sjcl.decrypt("secretkey",records.recordset[0].User_Password);
   
           if(userPass != inputPass){
-            res.status(401).send("Access denied");
+            res.status(401).send("Unauthorized");
             return;
           }
   
@@ -508,6 +507,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
           let secret = "SECRET_KEY"
           let token = jwt.sign({ userKey }, secret, options);
           res.send({
+            userKey: userKey,
             userName: userName,
             userLastName:  userLastName,
             userGroup: userGroup,
@@ -829,5 +829,66 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
           
             });
         });
+    });
+
+    // Change password
+    app.put('/api/v1/management/users/:userId', passport.authenticate('jwt', { session: false }), function (req, res) {
+        mssql.connect(dataBaseConfig, function (err) {
+
+        if (err){
+            console.log(err);
+            res.send(err);
+        }
+  
+        let request = new mssql.Request();
+    
+        let userKey = req.params.userId;
+        let pwdOld = req.body.pwdOld;
+        let pwdNew = req.body.pwdNew;
+
+        query = "SELECT User_ID, User_Password FROM dbo.Users WHERE User_ID = '" + userKey + "';";
+        request.query(query,
+            function (err, records) {
+            if (err){
+                console.log(err);
+                res.send(err);
+            }
+
+            let pwdCurrent = sjcl.decrypt("secretkey",records.recordset[0].User_Password);
+
+            if(pwdCurrent != pwdOld){
+                res.status(401).send("Unauthorized");
+                return;
+            }
+    
+            pwdNew = sjcl.encrypt("secretkey",pwdNew);
+
+            // Request password change
+            request.query("UPDATE dbo.Users SET " + 
+            "User_Password = '" + pwdNew + "' " +
+            "WHERE User_ID = '" + userKey + "';", 
+            function (err, records) {
+                
+                if (err){
+                    console.log(err);
+                    res.send(err);
+                }
+        
+                // Send response if successful
+                let options = {};
+                options.expiresIn = 1800;
+                let secret = "SECRET_KEY"
+                let token = jwt.sign({ userKey }, secret, options);
+                res.send({
+                    userKey: userKey,
+                    token
+                });
+            
+                });
+            });
+
+        }); 
+
+        
     });
 }
