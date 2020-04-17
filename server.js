@@ -2,6 +2,9 @@ const express = require("express");
 const mssql = require("mssql");
 const sjcl = require("sjcl");
 const bodyParser = require("body-parser");
+const jwt = require("jsonwebtoken");
+const passport = require("passport");
+const jwtStrategry  = require("./strategies/jwt");
 const app = express();
 
 const dataBaseConfig ={
@@ -14,24 +17,28 @@ const dataBaseConfig ={
 app.use(express.static(__dirname + "/public/dist/cutie-plushie"));
 app.use( bodyParser.json() );
 
+passport.use(jwtStrategry);
+
+const management = require("./apis/management")(app,mssql,sjcl,jwt,passport,dataBaseConfig);
+
 /**
  * -----------------------------------------
  * Useful functions
  * -----------------------------------------
  */
 
-  // This function gets the next available ID for a new record using a specific prefix.
-  function getNextID(latestId, prefix, totalLength){
-    var targetId = latestId.substring(1);
-    let IdNumber = parseInt(targetId);
-    IdNumber +=  1;
-    targetId = IdNumber.toString();
-    while(targetId.length != (totalLength - prefix.length)){
-      targetId = "0" + targetId;
-    }
-    targetId = prefix + targetId;
-    return targetId;
+// This function gets the next available ID for a new record using a specific prefix.
+function getNextID(latestId, prefix, totalLength){
+  var targetId = latestId.substring(1);
+  let IdNumber = parseInt(targetId);
+  IdNumber +=  1;
+  targetId = IdNumber.toString();
+  while(targetId.length != (totalLength - prefix.length)){
+    targetId = "0" + targetId;
   }
+  targetId = prefix + targetId;
+  return targetId;
+}
 
 
 /**
@@ -88,7 +95,7 @@ app.get('/api/v1/web/avatars/:avatarId', function (req, res) {
         }
 
         // Send records as a response
-        res.send(records.recordset);
+        res.send(records.recordset[0]);
         
     });
   });
@@ -138,7 +145,65 @@ app.get('/api/v1/web/currencyrates/:currencyId', function (req, res) {
         }
 
         // Send records as a response
-        res.send(records.recordset);
+        res.send(records.recordset[0]);
+        
+    });
+  });
+});
+
+//Get products by page
+app.get('/api/v1/web/products/', function (req, res) {
+  mssql.connect(dataBaseConfig, function (err) {
+    
+    if (err){
+      console.log(err);
+    }
+
+    let request = new mssql.Request();
+    let page = parseInt(req.query.page);
+    let offset = parseInt(req.query.productsPerPage);
+      
+    // Query to the database and get the records
+    request.query(
+    "SELECT Product_ID, Product_Name, Product_Description, Product_Unit_Price_MXN, Product_Icon "+
+    "FROM dbo.Products OFFSET " + offset + " * " + page + "ROWS FETCH NEXT " + offset + " ROWS ONLY;", 
+    function (err, records) {
+        
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
+
+        // Send records as a response
+        res.send(records.recordset[0]);
+        
+    });
+  });
+});
+
+// Get product by ID
+app.get('/api/v1/web/products/:productId', function (req, res) {
+  mssql.connect(dataBaseConfig, function (err) {
+    
+    if (err){
+      console.log(err);
+    }
+
+    let request = new mssql.Request();
+    let productId = req.params.productId;
+      
+    // Query to the database and get the records
+    request.query("SELECT Product_ID, Product_Name, Product_Description, Product_Unit_Price_MXN, Product_Icon FROM dbo.Products WHERE Product_ID = '" + 
+    productId + "';", 
+    function (err, records) {
+        
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
+
+        // Send records as a response
+        res.send(records.recordset[0]);
         
     });
   });
@@ -148,8 +213,67 @@ app.get('/api/v1/web/currencyrates/:currencyId', function (req, res) {
  *  POST Methods
  */
 
+// Create new address
+app.post('/api/v1/web/addresses/', function (req, res) {
+  mssql.connect(dataBaseConfig, function (err) {
+    
+    if (err){
+      console.log(err);
+    }
+
+    request.query("SELECT TOP 1 Address_ID FROM dbo.Addresses ORDER BY Address_ID DESC;", function (err, records) {
+        
+      if (err){
+        console.log(err);
+        res.send(err);
+      }
+
+      let request = new mssql.Request();
+
+      let addressId;
+      if(records.recordset.length>0){
+        let latestId = records.recordset[0]["Address_ID"];
+        addressId = getNextID(latestId, "a", 10);
+      } else {
+        addressId = "a000000000";
+      } 
+      let addressStreetName = req.body.streetName;
+      let addressExteriorNumber = req.body.exteriorNumber;
+      let addressInteriorNumber = req.body.interiorNumber;
+      let addressResidentialArea = req.body.residentialArea;
+      let addressZipCode = req.body.zipCode;
+      let addressState = req.body.state;
+      let addressCity = req.body.city;
+      let customerId = req.body.customer;
+        
+      // Query to the database and get the records
+      request.query("INSERT INTO dbo.Addresses VALUES('" + 
+      addressId +  "','" + 
+      addressStreetName + "','" + 
+      addressExteriorNumber + "','" + 
+      addressInteriorNumber + "','" + 
+      addressResidentialArea + "','" + 
+      addressZipCode + "','" + 
+      addressState + "','" + 
+      addressCity + "','" + 
+      customerId + "');", 
+      function (err, records) {
+          
+          if (err){
+            console.log(err);
+            res.send(err);
+          }
+
+          // Send records as a response
+          res.send(true);
+          
+      });
+    });
+  });
+});
+
  // Create new customer
- app.post('/api/v1/web/customers/', function (req, res) {
+app.post('/api/v1/web/customers/', function (req, res) {
   mssql.connect(dataBaseConfig, function (err) {
     
     if (err){
@@ -161,7 +285,6 @@ app.get('/api/v1/web/currencyrates/:currencyId', function (req, res) {
     let customerName = req.body.name;
     let customerLastName = req.body.lastName;
     let customerPass = req.body.pwd;
-    console.log(customerPass);
     customerPass = sjcl.encrypt("secretkey",customerPass);
     let customerDateOfBirth = req.body.dob;
     let today = new Date();
@@ -193,112 +316,81 @@ app.get('/api/v1/web/currencyrates/:currencyId', function (req, res) {
 });
   
 /**
- * -----------------------------------------
- * Manager API v1
- * -----------------------------------------
+ * PUT Methods
  */
 
-
-// Create new product
-app.post('/api/v1/management/products/', function (req, res) {
+ // Update address
+app.put('/api/v1/web/addresses/:addressId', function (req, res) {
   mssql.connect(dataBaseConfig, function (err) {
-    
+
     if (err){
       console.log(err);
+      res.send(err);
     }
 
     let request = new mssql.Request();
-    request.query("SELECT TOP 1 Product_ID FROM dbo.Products ORDER BY Product_ID DESC;", function (err, records) {
-        
-      if (err){
-        console.log(err);
-        res.send(err);
-      }
 
-      // Get next available ID
-      let latestId = records.recordset[0]["Product_ID"];
-      let productId = getNextID(latestId, "p", 10);
+    let addressId = req.params.addressId;
+    let addressStreetName = req.body.streetName;
+    let addressExteriorNumber = req.body.exteriorNumber;
+    let addressInteriorNumber = req.body.interiorNumber;
+    let addressResidentialArea = req.body.residentialArea;
+    let addressZipCode = req.body.zipCode;
+    let addressState = req.body.state;
+    let addressCity = req.body.city;
       
-      let productName = req.body.name;
-      let productDescription = req.body.description;
-      let productUnitPrice = req.body.unitPrice;
-      let productIcon = req.body.icon;
-      let supplierId = req.body.supplier;
-      let categoryId = req.body.category;
+    // Query to the database and get the records
+    request.query("UPDATE dbo.Addresses SET " + 
+    "Address_Street_Name = '" + addressStreetName + "', " + 
+    "Address_Exterior_Number = '" + addressExteriorNumber + "', " + 
+    "Address_Interior_Number = '" + addressInteriorNumber + "', " + 
+    "Address_Residential_Area = '" + addressResidentialArea + "', " + 
+    "Address_ZIP_Code = '" + addressZipCode + "', " + 
+    "Address_State = '" + addressState + "', " + 
+    "Address_City = '" + addressCity + "' " + 
+    "WHERE Address_ID = '" + addressId + "';", 
+    function (err, records) {
         
-      // Query to the database and get the records
-      request = new mssql.Request();
-      request.query("INSERT INTO dbo.Products VALUES('" + 
-      productId +  "','" + 
-      productName + "','" + 
-      productDescription + "'," + 
-      productUnitPrice + ",'" + 
-      productIcon + "'," + 
-      "1,'" + 
-      supplierId + "','" + 
-      categoryId + "'," + 
-      "0);", 
-      function (err, records) {
-          
-          if (err){
-            console.log(err);
-            res.send(err);
-          }
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
 
-          // Send records as a response
-          res.send(true);
-          
-      });
+        // Send records as a response
+        res.send(true);
+        
     });
   });
 });
 
-// Add new supplier
-app.post('/api/v1/management/suppliers/', function (req, res) {
+ // Update avatar
+ app.put('/api/v1/web/customers/:customerId/avatar/', function (req, res) {
   mssql.connect(dataBaseConfig, function (err) {
-    
+
     if (err){
       console.log(err);
+      res.send(err);
     }
 
     let request = new mssql.Request();
-    request.query("SELECT TOP 1 Supplier_ID FROM dbo.Suppliers ORDER BY Supplier_ID DESC;", function (err, records) {
-        
-      if (err){
-        console.log(err);
-        res.send(err);
-      }
 
-      // Get next available ID
-      let latestId = records.recordset[0]["Supplier_ID"];
-      let supplierId = getNextID(latestId, "s", 10);
-      
-      // Parse the JSON body of the request
-      let supplierName = req.body.name;
-      let supplierContactName = req.body.contactName;
-      let supplierPhoneNumber = req.body.phoneNumber;
-      let supplierEmail = req.body.email;
-        
-      // Query to the database and get the records
-      request = new mssql.Request();
-      request.query("INSERT INTO dbo.Suppliers VALUES('" + 
-      supplierId +  "','" + 
-      supplierName + "','" + 
-      supplierContactName + "','" + 
-      supplierPhoneNumber + "','" + 
-      supplierEmail + "'," + 
-      "1);", 
-      function (err, records) {
-          
-          if (err){
-            console.log(err);
-            res.send(err);
-          }
+    let customerId = req.params.customerId;
+    let avatarId = req.body.avatarId;
 
-          // Send records as a response
-          res.send(true);
-          
-      });
+    // Query to the database and get the records
+    request.query("UPDATE dbo.Customers SET " + 
+    "Avatar_ID = '" + avatarId + "' " + 
+    "WHERE Customer_ID = '" + customerId + "';", 
+    function (err, records) {
+        
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
+
+        // Send records as a response
+        res.send(true);
+        
     });
   });
 });
