@@ -333,6 +333,78 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       });
     });
   });
+
+  // Get distributor
+  app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+      
+      if (err){
+        console.log(err);
+      }
+  
+      let request = new mssql.Request(); 
+      // Query to the database and get the records
+      request.query("SELECT	* FROM dbo.Distributors;", 
+      function (err, records) {
+          
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
+  
+        // Send records as a response
+        let distributors = [];
+        for(let distributor of records.recordset){
+        distributorJSON = {
+            distributorId: distributor.Distributor_ID,
+            distributorName: distributor.Distributor_Name,
+            distributorContactName: distributor.Distributor_Contact_Name,
+            distributorPhoneNumber: distributor.Distributor_Phone_Number,
+            distributorMail: distributor.Distributor_Mail,
+            active: distributor.Active
+          };
+          distributors.push(distributorJSON);
+        }
+        res.send(distributors);
+      });
+    });
+  });
+
+  // Get distributor by ID
+  app.get('/api/v1/management/distributors/:distributorId', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+      
+      if (err){
+        console.log(err);
+      }
+  
+      let request = new mssql.Request();
+      // Query to the database and get the records
+      request.query("SELECT	* FROM dbo.Distributors WHERE Distributor_ID = '" + distributorId + "';", 
+      function (err, records) {
+          
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
+  
+        // Send records as a response
+        let distributors = [];
+        for(let distributor of records.recordset){
+        distributorJSON = {
+            distributorId: distributor.Distributor_ID,
+            distributorName: distributor.Distributor_Name,
+            distributorContactName: distributor.Distributor_Contact_Name,
+            distributorPhoneNumber: distributor.Distributor_Phone_Number,
+            distributorMail: distributor.Distributor_Mail,
+            active: distributor.Active
+          };
+          distributors.push(distributorJSON);
+        }
+        res.send(distributors);
+      });
+    });
+  });
   
   /**
    *  POST Methods
@@ -482,10 +554,10 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         }  
         
         // Parse the JSON body of the request
-        let supplierName = req.body.supplierNname;
+        let supplierName = req.body.supplierName;
         let supplierContactName = req.body.supplierContactName;
         let supplierPhoneNumber = req.body.supplierPhoneNumber;
-        let supplierEmail = req.body.supplierEmail;
+        let supplierMail = req.body.supplierMail;
           
         // Query to the database and get the records
         request = new mssql.Request();
@@ -494,7 +566,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         supplierName + "','" + 
         supplierContactName + "','" + 
         supplierPhoneNumber + "','" + 
-        supplierEmail + "'," + 
+        supplierMail + "'," + 
         "1);", 
         function (err, records) {
             
