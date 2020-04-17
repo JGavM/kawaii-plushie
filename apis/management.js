@@ -421,47 +421,97 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
   *  PUT Methods
   */
 
-  // Update a product
-    app.put('/api/v1/management/products/:productId', function (req, res) {
-    mssql.connect(dataBaseConfig, function (err) {
-  
-      if (err){
-        console.log(err);
-        res.send(err);
-      }
-  
-      let request = new mssql.Request();
-  
-      let productId = req.params.addressId;
-      let productName = req.body.productName;
-      let productDescription = req.body.productDescription;
-      let productUnitPrice = req.body.productUnitPrice;
-      let productIcon = req.body.productIcon;
-      let active = req.body.active;
-      let supplierId = req.body.supplierId;
-      let productActiveDiscount = req.body.productActiveDiscount;
-        
-      // Query to the database and get the records
-      request.query("UPDATE dbo.Products SET " + 
-      "Product_Name = '" + productName + "', " + 
-      "Product_Description = '" + productDescription + "', " + 
-      "Product_Unit_Price_MXN = '" + productUnitPrice + "', " + 
-      "Proudct_Icon = '" + productIcon + "', " + 
-      "Active = '" + active + "', " + 
-      "Supplier_ID = '" + supplierId + "', " + 
-      "Product_Active_Discount = '" + productActiveDiscount + "' " + 
-      "WHERE Product_ID = '" + productId + "';", 
-      function (err, records) {
-          
-          if (err){
+    // Update a product
+    app.put('/api/v1/management/products/:productId', passport.authenticate('jwt', { session: false }), function (req, res) {
+        mssql.connect(dataBaseConfig, function (err) {
+    
+        if(req.user.userGroup != "ADMIN"){
+            res.status(401).send("Unauthorized");
+            return;
+        }
+
+        if (err){
             console.log(err);
             res.send(err);
-          }
+        }
   
-          // Send records as a response
-          res.send(true);
+        let request = new mssql.Request();
+    
+        let productId = req.params.productId;
+        let productName = req.body.productName;
+        let productDescription = req.body.productDescription;
+        let productUnitPrice = req.body.productUnitPrice;
+        let productIcon = req.body.productIcon;
+        let active = req.body.active;
+        let supplierId = req.body.supplierId;
+        let productActiveDiscount = req.body.productActiveDiscount;
+            
+        // Query to the database and get the records
+        request.query("UPDATE dbo.Products SET " + 
+        "Product_Name = '" + productName + "', " + 
+        "Product_Description = '" + productDescription + "', " + 
+        "Product_Unit_Price_MXN = '" + productUnitPrice + "', " + 
+        "Proudct_Icon = '" + productIcon + "', " + 
+        "Active = '" + active + "', " + 
+        "Supplier_ID = '" + supplierId + "', " + 
+        "Product_Active_Discount = '" + productActiveDiscount + "' " + 
+        "WHERE Product_ID = '" + productId + "';", 
+        function (err, records) {
+            
+            if (err){
+                console.log(err);
+                res.send(err);
+            }
+    
+            // Send records as a response
+            res.send(true);
           
-      });
+            });
+        });
     });
-  });
+
+    // Update a supplier
+    app.put('/api/v1/management/supplier/:supplierId', passport.authenticate('jwt', { session: false }), function (req, res) {
+        mssql.connect(dataBaseConfig, function (err) {
+    
+        if(req.user.userGroup != "ADMIN"){
+            res.status(401).send("Unauthorized");
+            return;
+        }
+
+        if (err){
+            console.log(err);
+            res.send(err);
+        }
+  
+        let request = new mssql.Request();
+    
+        let supplierId = req.params.supplierId;
+        let supplierName = req.body.supplierName;
+        let supplierContactName = req.body.productDescription;
+        let supplierPhoneNumber = req.body.productUnitPrice;
+        let supplierMail = req.body.productIcon;
+        let active = req.body.active;
+            
+        // Query to the database and get the records
+        request.query("UPDATE dbo.Products SET " + 
+        "Supplier_Name = '" + productName + "', " + 
+        "Supplier_Contact_Name = '" + productDescription + "', " + 
+        "Supplier_Phone_Number = '" + productUnitPrice + "', " + 
+        "Supplier_Mail = '" + productIcon + "', " + 
+        "Active = '" + active + "' " +
+        "WHERE Product_ID = '" + productId + "';", 
+        function (err, records) {
+            
+            if (err){
+                console.log(err);
+                res.send(err);
+            }
+    
+            // Send records as a response
+            res.send(true);
+          
+            });
+        });
+    });
 }
