@@ -147,7 +147,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         
       // Query to the database and get the records
       request.query(
-      "SELECT q.Product_ID, pp.Product_Name, c.Category_Name, q.Sales FROM "+
+      "SELECT q.Product_ID, pp.Product_Name, pp.Category_ID, c.Category_Name, q.Sales FROM "+
       "((SELECT TOP " + top + " p.Product_ID, COUNT(s.Sale_ID) AS Sales "+
       "FROM ((dbo.Products AS p INNER JOIN dbo.Articles AS a on p.Product_ID = a.Product_ID) "+
       "INNER JOIN dbo.Sales AS s ON a.Article_ID = s.Article_ID) "+
@@ -168,15 +168,8 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
           productJSON = {
             productId: product.Product_ID,
             productName: product.Product_Name,
-            productDescription: product.Product_Description,
-            productUnitPriceMXN: product.Product_Unit_Price_MXN,
-            productIcon: product.Product_Icon,
-            active: product.Active,
             productActiveDiscount: product.Product_Active_Discount,
-            supplier: {
-              supplierId: product.Supplier_ID,
-              supplierName: product.Supplier_Name,
-            },
+            productSales: product.Sales,
             category: {
               categoryId: product.Category_ID,
               categoryName: product.Category_Name,
@@ -184,7 +177,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
           };
           products.push(productJSON);
         }
-          
+        res.send(products);
       });
     });
   });
