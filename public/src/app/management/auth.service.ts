@@ -9,7 +9,7 @@ export class AuthService {
 
     public isAuthenticated() : Boolean {
       let token = localStorage.getItem('cutie-plushie-token')
-      if(token != null){
+      if(token != null && token != ''){
         return true;
       }
       return false;

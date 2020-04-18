@@ -1,11 +1,52 @@
 <div class="toolbar" role="banner">
     <img
         height="60px"
-        alt="Angular Logo"
+        alt="Logo"
         src="assets/images/cutie_plushie_logo_header.png"
+        (click)="goHome()"
     />
-    <div class="spacer"></div>
-        
+    
+    <div *ngIf="userIsLoggedIn()" class="toolbar-options sales" (click)="goTo($event)">
+        <div class="sales">
+            Ventas
+        </div>    
+    </div>
+
+    <div *ngIf="userIsLoggedIn()" class="toolbar-options products" (click)="goTo($event)">
+        <div class="products">
+            Productos
+        </div>    
+    </div>
+    
+    <div *ngIf="userIsLoggedIn() && userIsAdmin()" class="toolbar-options suppliers" (click)="goTo($event)">
+        <div class="suppliers">
+            Proveedores
+        </div>
+    </div>
+    
+    <div *ngIf="userIsLoggedIn() && userIsAdmin()" class="toolbar-options distributors" (click)="goTo($event)">
+        <div class="distributors">
+            Distribuidores
+        </div>
+    </div>
+    
+    <div *ngIf="userIsLoggedIn() && userIsAdmin()" class="toolbar-options register" (click)="goTo($event)">
+        <div class="register">
+            Registro de usuario
+        </div>
+    </div>
+
+    <div *ngIf="userIsLoggedIn()" class="toolbar-options passwordreset" (click)="goTo($event)">
+        <div class="passwordreset">
+            Cambiar contraseña
+        </div>
+    </div>
+
+    <div *ngIf="userIsLoggedIn()" class="toolbar-options logout" (click)="logout()">
+        <div class="logout">
+            Cerrar sesión
+        </div>
+    </div>
 </div>
 
 <router-outlet></router-outlet>
