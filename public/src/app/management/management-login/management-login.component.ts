@@ -10,7 +10,7 @@ import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms'
 })
 export class ManagementLoginComponent implements OnInit {
   loginForm: FormGroup;
-  user;
+  submitted = false;
 
   constructor(
     private http: HttpClient, 
@@ -21,9 +21,7 @@ export class ManagementLoginComponent implements OnInit {
       if(token != null){
         this.router.navigate(['management/home']);
       }
-    }
 
-  ngOnInit(): void {
       this.loginForm = this.formBuilder.group({
         user: new FormControl('', [
           Validators.required,
@@ -33,20 +31,25 @@ export class ManagementLoginComponent implements OnInit {
         password: new FormControl('', [
           Validators.required
         ])
-    });
+      });
+    }
+
+  ngOnInit(): void {
+      
   }
 
   onSubmit() {
-    console.log(this.loginForm.controls.user);
-    console.log(this.loginForm.controls.password);
+    this.submitted = true;
     // Stop here if form is invalid
     if (this.loginForm.invalid) {
-      //alert("Por favor introduzca su usuario y contraseña para poder ingresar.");
+      //alert("Por favor introduzca su usuario y contraseña para poder ingresar.");}
+      
       return;
     }
 
-    let res = this.validate(this.loginForm.controls.user.value, this.loginForm.controls.password.value);
-    console.log(res);
+    this.validate(this.loginForm.controls.user.value, this.loginForm.controls.password.value).subscribe(
+      
+    );
   }
 
   public validate(key: string, password: string) {
@@ -55,6 +58,6 @@ export class ManagementLoginComponent implements OnInit {
       '/api/v1/management/login', 
       {'key' : key, 'pwd' : password}, 
       {observe: 'response', responseType: 'json'}
-    ).toPromise()
+    )
   }
 }
