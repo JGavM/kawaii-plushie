@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-management',
@@ -7,11 +8,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ManagementComponent implements OnInit {
 
-  constructor() { }
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
-    if(localStorage.getItem('cutie-plushie-token') == null){
-      
+    let token = localStorage.getItem('cutie-plushie-token');
+    if(token != null){
+      this.router.navigate(['management/home']);
+    } else {
+      this.router.navigate(['management/login']);
     }
   }
 

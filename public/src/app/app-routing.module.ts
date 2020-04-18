@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
+import { AuthGuardService } from './management/auth-guard.service';
+
 import { ManagementComponent } from './management/management.component';
 import { ManagementLoginComponent } from './management/management-login/management-login.component';
 import { ManagementHomeComponent } from './management/management-home/management-home.component';
@@ -16,13 +18,13 @@ const routes: Routes = [
     path: 'management', 
     component: ManagementComponent ,
     children: [
-      { path: 'login', redirectTo: redirectToHome(), pathMatch: 'full' ,component: ManagementLoginComponent },
-      { path: 'home', redirectTo: redirectToLogin(), component: ManagementHomeComponent },
-      { path: 'register', redirectTo: redirectToLogin(), component: ManagementRegisterComponent },
-      { path: 'suppliers', redirectTo: redirectToLogin(), component: ManagementSuppliersComponent },
-      { path: 'distributors', redirectTo: redirectToLogin(), component: ManagementDistributorsComponent },
-      { path: 'sales', redirectTo: redirectToLogin(), component: ManagementSalesComponent },
-      { path: 'products', redirectTo: redirectToLogin(), component: ManagementProductsComponent }
+      { path: 'login', component: ManagementLoginComponent},
+      { path: 'home', component: ManagementHomeComponent, canActivate : [AuthGuardService] },
+      { path: 'register', component: ManagementRegisterComponent, canActivate : [AuthGuardService] },
+      { path: 'suppliers', component: ManagementSuppliersComponent, canActivate : [AuthGuardService] },
+      { path: 'distributors', component: ManagementDistributorsComponent, canActivate : [AuthGuardService] },
+      { path: 'sales', component: ManagementSalesComponent, canActivate : [AuthGuardService] },
+      { path: 'products', component: ManagementProductsComponent, canActivate : [AuthGuardService] }
     ]
   },
   

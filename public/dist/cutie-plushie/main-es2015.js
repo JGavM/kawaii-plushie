@@ -60,13 +60,13 @@ const routes = [
         path: 'management',
         component: _management_management_component__WEBPACK_IMPORTED_MODULE_2__["ManagementComponent"],
         children: [
-            { path: 'login', redirectTo: redirectToHome(), component: _management_management_login_management_login_component__WEBPACK_IMPORTED_MODULE_3__["ManagementLoginComponent"] },
-            { path: 'home', redirectTo: redirectToLogin(), component: _management_management_home_management_home_component__WEBPACK_IMPORTED_MODULE_4__["ManagementHomeComponent"] },
-            { path: 'register', redirectTo: redirectToLogin(), component: _management_management_register_management_register_component__WEBPACK_IMPORTED_MODULE_5__["ManagementRegisterComponent"] },
-            { path: 'suppliers', redirectTo: redirectToLogin(), component: _management_management_suppliers_management_suppliers_component__WEBPACK_IMPORTED_MODULE_6__["ManagementSuppliersComponent"] },
-            { path: 'distributors', redirectTo: redirectToLogin(), component: _management_management_distributors_management_distributors_component__WEBPACK_IMPORTED_MODULE_7__["ManagementDistributorsComponent"] },
-            { path: 'sales', redirectTo: redirectToLogin(), component: _management_management_sales_management_sales_component__WEBPACK_IMPORTED_MODULE_8__["ManagementSalesComponent"] },
-            { path: 'products', redirectTo: redirectToLogin(), component: _management_management_products_management_products_component__WEBPACK_IMPORTED_MODULE_9__["ManagementProductsComponent"] }
+            { path: 'login', component: _management_management_login_management_login_component__WEBPACK_IMPORTED_MODULE_3__["ManagementLoginComponent"] },
+            { path: 'home', component: _management_management_home_management_home_component__WEBPACK_IMPORTED_MODULE_4__["ManagementHomeComponent"] },
+            { path: 'register', component: _management_management_register_management_register_component__WEBPACK_IMPORTED_MODULE_5__["ManagementRegisterComponent"] },
+            { path: 'suppliers', component: _management_management_suppliers_management_suppliers_component__WEBPACK_IMPORTED_MODULE_6__["ManagementSuppliersComponent"] },
+            { path: 'distributors', component: _management_management_distributors_management_distributors_component__WEBPACK_IMPORTED_MODULE_7__["ManagementDistributorsComponent"] },
+            { path: 'sales', component: _management_management_sales_management_sales_component__WEBPACK_IMPORTED_MODULE_8__["ManagementSalesComponent"] },
+            { path: 'products', component: _management_management_products_management_products_component__WEBPACK_IMPORTED_MODULE_9__["ManagementProductsComponent"] }
         ]
     },
 ];
