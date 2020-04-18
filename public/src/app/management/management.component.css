@@ -1,0 +1,14 @@
+.toolbar {
+    height: 100px;
+    margin: -8px;
+    display: flex;
+    align-items: center;
+    background-color: white;
+    color: rgb(0, 0, 0);
+    font-weight: 600;
+}
+
+.toolbar img {
+    margin-left: 2.5%;
+    margin-top: 20px;
+  }

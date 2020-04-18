@@ -18,6 +18,7 @@ const routes: Routes = [
     path: 'management', 
     component: ManagementComponent ,
     children: [
+      { path: '',   redirectTo: 'login', pathMatch: 'full' },
       { path: 'login', component: ManagementLoginComponent},
       { path: 'home', component: ManagementHomeComponent, canActivate : [AuthGuardService] },
       { path: 'register', component: ManagementRegisterComponent, canActivate : [AuthGuardService] },
@@ -26,25 +27,8 @@ const routes: Routes = [
       { path: 'sales', component: ManagementSalesComponent, canActivate : [AuthGuardService] },
       { path: 'products', component: ManagementProductsComponent, canActivate : [AuthGuardService] }
     ]
-  },
-  
+  }
 ];
-
-function redirectToLogin(){
-  if(localStorage.getItem('cutie-plushie-token') == null){
-    return 'login';
-  } else {
-    return null;
-  }
-}
-
-function redirectToHome(){
-  if(localStorage.getItem('cutie-plushie-token') == null){
-    return null;
-  } else {
-    return 'home';
-  }
-}
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, {useHash: true})],
