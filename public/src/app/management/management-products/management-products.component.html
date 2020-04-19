@@ -1,1 +1,44 @@
-<p>management-products works!</p>
+<div class="products-component">
+    <div class="table-container">
+        <h1>
+            Productos
+        </h1>
+
+        <mat-form-field>
+            <input class="filter-box" matInput (keyup)="applyFilter($event)" placeholder="Buscar...">
+        </mat-form-field>
+
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+            <ng-container matColumnDef="productId">
+              <th mat-header-cell *matHeaderCellDef> ID </th>
+              <td mat-cell *matCellDef="let product"> {{product.productId}} </td>
+            </ng-container>
+          
+            <ng-container matColumnDef="productName">
+              <th mat-header-cell *matHeaderCellDef> Nombre </th>
+              <td mat-cell *matCellDef="let product"> {{product.productName}} </td>
+            </ng-container>
+          
+            <ng-container matColumnDef="productDescription">
+              <th mat-header-cell *matHeaderCellDef> Descripción </th>
+              <td mat-cell *matCellDef="let product"> {{product.productDescription}} </td>
+            </ng-container>
+          
+            <ng-container matColumnDef="productUnitPriceMXN">
+              <th mat-header-cell *matHeaderCellDef> Precio (MXN) </th>
+              <td mat-cell *matCellDef="let product"> {{product.productUnitPriceMXN}} </td>
+            </ng-container>
+    
+            <ng-container matColumnDef="productActiveDiscount">
+                <th mat-header-cell *matHeaderCellDef> Descuento </th>
+                <td mat-cell *matCellDef="let product"> {{product.productActiveDiscount}} </td>
+              </ng-container>
+          
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            
+            <mat-paginator [length]="dataSource.length" [pageSize]="30"></mat-paginator>
+        </table>
+    </div>
+</div>
