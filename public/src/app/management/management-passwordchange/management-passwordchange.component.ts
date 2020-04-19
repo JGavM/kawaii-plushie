@@ -64,13 +64,13 @@ export class ManagementPasswordchangeComponent implements OnInit {
         localStorage.removeItem('cutie-plushie-token');
         localStorage.getItem('user-details');
         this.router.navigate(['management/login']);
-      } 
-      else if(res.status == 403) {
+      } else if(res.status == 403) {
         alert("Su contraseña anterior no coincide con los registros. Por favor intente de nuevo.");
+        this.router.navigate(['management/home']);
       }
     }
   
-    public changePassword(pwdOld: string, pwdNew: string): Promise<HttpResponse<any>> {
+    public changePassword(pwdOld: string, pwdNew: string): Promise<HttpResponse<Object>> {
       let user = JSON.parse(localStorage.getItem('user-details')).userKey;
       let token = localStorage.getItem('cutie-plushie-token');
 
@@ -84,7 +84,11 @@ export class ManagementPasswordchangeComponent implements OnInit {
         '/api/v1/management/users/' + user, 
         {'pwdOld' : pwdOld, 'pwdNew' : pwdNew}, 
         {headers: headers, observe: 'response', responseType: 'json'}
-      ).toPromise()
+      ).toPromise().then(function(res) {
+        return res;
+      }).catch(function(err){ 
+        return err;
+      });
     }
 
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 
@@ -48,6 +48,7 @@ export class ManagementLoginComponent implements OnInit {
     }
 
     let res = await this.validate(this.loginForm.controls.user.value, this.loginForm.controls.password.value);
+    
     if(res.status == 200){
       let body = res.body;
       let bodyJson = JSON.parse(JSON.stringify(body));
@@ -66,12 +67,16 @@ export class ManagementLoginComponent implements OnInit {
     }
   }
 
-  public validate(key: string, password: string): Promise<HttpResponse<any>> {
+  public validate(key: string, password: string): Promise<HttpResponse<Object>> {
     password = btoa(password);
     return this.http.post(
       '/api/v1/management/login', 
       {'key' : key, 'pwd' : password}, 
       {observe: 'response', responseType: 'json'}
-    ).toPromise()
+    ).toPromise().then(function(res) {
+      return res;
+    }).catch(function(err){ 
+      return err;
+    });
   }
 }

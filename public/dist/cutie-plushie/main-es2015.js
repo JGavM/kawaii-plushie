@@ -502,7 +502,11 @@ class ManagementLoginComponent {
     }
     validate(key, password) {
         password = btoa(password);
-        return this.http.post('/api/v1/management/login', { 'key': key, 'pwd': password }, { observe: 'response', responseType: 'json' }).toPromise();
+        return this.http.post('/api/v1/management/login', { 'key': key, 'pwd': password }, { observe: 'response', responseType: 'json' }).toPromise().then(function (res) {
+            return res;
+        }).catch(function (err) {
+            return err;
+        });
     }
 }
 ManagementLoginComponent.ɵfac = function ManagementLoginComponent_Factory(t) { return new (t || ManagementLoginComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_common_http__WEBPACK_IMPORTED_MODULE_3__["HttpClient"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_4__["Router"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_2__["FormBuilder"])); };
@@ -671,16 +675,7 @@ class ManagementPasswordchangeComponent {
             if (this.passwordChangeForm.invalid) {
                 return;
             }
-            let res;
-            try {
-                res = yield this.changePassword(this.passwordChangeForm.controls.oldPassword.value, this.passwordChangeForm.controls.newPassword.value);
-            }
-            catch (err) {
-                alert('Sus credenciales han expirado. Por favor inicie sesión de nuevo.');
-                localStorage.removeItem('cutie-plushie-token');
-                localStorage.getItem('user-details');
-                this.router.navigate(['management/login']);
-            }
+            let res = yield this.changePassword(this.passwordChangeForm.controls.oldPassword.value, this.passwordChangeForm.controls.newPassword.value);
             if (res.status == 200) {
                 let body = res.body;
                 let bodyJson = JSON.parse(JSON.stringify(body));
@@ -689,7 +684,14 @@ class ManagementPasswordchangeComponent {
                 alert('Su contraseña se ha cambiado con éxito!');
             }
             else if (res.status == 401) {
+                alert('Sus credenciales han expirado. Por favor inicie sesión de nuevo.');
+                localStorage.removeItem('cutie-plushie-token');
+                localStorage.getItem('user-details');
+                this.router.navigate(['management/login']);
+            }
+            else if (res.status == 403) {
                 alert("Su contraseña anterior no coincide con los registros. Por favor intente de nuevo.");
+                this.router.navigate(['management/home']);
             }
         });
     }
@@ -700,7 +702,11 @@ class ManagementPasswordchangeComponent {
         pwdNew = btoa(pwdNew);
         const headers = new _angular_common_http__WEBPACK_IMPORTED_MODULE_2__["HttpHeaders"]()
             .set("Authorization", "Bearer " + token);
-        return this.http.put('/api/v1/management/users/' + user, { 'pwdOld': pwdOld, 'pwdNew': pwdNew }, { headers: headers, observe: 'response', responseType: 'json' }).toPromise();
+        return this.http.put('/api/v1/management/users/' + user, { 'pwdOld': pwdOld, 'pwdNew': pwdNew }, { headers: headers, observe: 'response', responseType: 'json' }).toPromise().then(function (res) {
+            return res;
+        }).catch(function (err) {
+            return err;
+        });
     }
 }
 ManagementPasswordchangeComponent.ɵfac = function ManagementPasswordchangeComponent_Factory(t) { return new (t || ManagementPasswordchangeComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_common_http__WEBPACK_IMPORTED_MODULE_2__["HttpClient"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_4__["Router"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_3__["FormBuilder"])); };

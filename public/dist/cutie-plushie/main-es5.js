@@ -990,7 +990,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           }, {
             observe: 'response',
             responseType: 'json'
-          }).toPromise();
+          }).toPromise().then(function (res) {
+            return res;
+          }).catch(function (err) {
+            return err;
+          });
         }
       }]);
 
@@ -1327,24 +1331,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     return _context2.abrupt("return");
 
                   case 6:
-                    _context2.prev = 6;
-                    _context2.next = 9;
+                    _context2.next = 8;
                     return this.changePassword(this.passwordChangeForm.controls.oldPassword.value, this.passwordChangeForm.controls.newPassword.value);
 
-                  case 9:
+                  case 8:
                     res = _context2.sent;
-                    _context2.next = 18;
-                    break;
 
-                  case 12:
-                    _context2.prev = 12;
-                    _context2.t0 = _context2["catch"](6);
-                    alert('Sus credenciales han expirado. Por favor inicie sesión de nuevo.');
-                    localStorage.removeItem('cutie-plushie-token');
-                    localStorage.getItem('user-details');
-                    this.router.navigate(['management/login']);
-
-                  case 18:
                     if (res.status == 200) {
                       body = res.body;
                       bodyJson = JSON.parse(JSON.stringify(body));
@@ -1352,15 +1344,21 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                       localStorage.setItem('cutie-plushie-token', token);
                       alert('Su contraseña se ha cambiado con éxito!');
                     } else if (res.status == 401) {
+                      alert('Sus credenciales han expirado. Por favor inicie sesión de nuevo.');
+                      localStorage.removeItem('cutie-plushie-token');
+                      localStorage.getItem('user-details');
+                      this.router.navigate(['management/login']);
+                    } else if (res.status == 403) {
                       alert("Su contraseña anterior no coincide con los registros. Por favor intente de nuevo.");
+                      this.router.navigate(['management/home']);
                     }
 
-                  case 19:
+                  case 10:
                   case "end":
                     return _context2.stop();
                 }
               }
-            }, _callee2, this, [[6, 12]]);
+            }, _callee2, this);
           }));
         }
       }, {
@@ -1378,7 +1376,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             headers: headers,
             observe: 'response',
             responseType: 'json'
-          }).toPromise();
+          }).toPromise().then(function (res) {
+            return res;
+          }).catch(function (err) {
+            return err;
+          });
         }
       }]);
 
