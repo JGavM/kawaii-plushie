@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-management-login',
@@ -14,7 +15,7 @@ export class ManagementLoginComponent implements OnInit {
 
   constructor(
     private http: HttpClient, 
-    private router: Router, 
+    private router: Router,
     private formBuilder: FormBuilder
     ) { 
       let token = localStorage.getItem('cutie-plushie-token')
@@ -38,7 +39,7 @@ export class ManagementLoginComponent implements OnInit {
       
   }
 
-  onSubmit() {
+  async onSubmit() {
     this.submitted = true;
     // Stop here if form is invalid
     if (this.loginForm.invalid) {
@@ -47,17 +48,31 @@ export class ManagementLoginComponent implements OnInit {
       return;
     }
 
-    this.validate(this.loginForm.controls.user.value, this.loginForm.controls.password.value).subscribe(
-      
-    );
+    let res = await this.validate(this.loginForm.controls.user.value, this.loginForm.controls.password.value);
+    if(res.status == 200){
+      let body = res.body;
+      let bodyJson = JSON.parse(JSON.stringify(body));
+      let user = {
+        userKey: bodyJson.userKey,
+        userName: bodyJson.userName,
+        userLastName: bodyJson.userLastName,
+        userGroup: bodyJson.userGroup
+      }
+      let token = bodyJson.token
+      localStorage.setItem('cutie-plushie-token',token);
+      localStorage.setItem('user-details',JSON.stringify(user));
+      this.router.navigate(['management/home']);
+    } else if(res.status == 401){
+      alert("Usuario y/o contraseña incorrectos.");
+    }
   }
 
-  public validate(key: string, password: string) {
+  public validate(key: string, password: string): Promise<HttpResponse<any>> {
     password = btoa(password);
     return this.http.post(
       '/api/v1/management/login', 
       {'key' : key, 'pwd' : password}, 
       {observe: 'response', responseType: 'json'}
-    )
+    ).toPromise()
   }
 }

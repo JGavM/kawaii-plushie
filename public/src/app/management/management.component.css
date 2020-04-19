@@ -1,3 +1,4 @@
+
 .toolbar {
     height: 100px;
     margin: -8px;
@@ -6,9 +7,35 @@
     background-color: white;
     color: rgb(0, 0, 0);
     font-weight: 600;
+    font-family: poppins;
 }
 
 .toolbar img {
     margin-left: 5%;
+    margin-right: 5%;
     margin-top: 40px;
-  }
+    cursor: pointer;
+}
+
+.toolbar-options{
+    margin: 1%;
+    margin-top: 2%;
+    background-color: inherit;
+    cursor: pointer;
+    transition: 0.3s;
+    width: 160px;
+    height: 80px;
+    text-align: center;
+    font-size: large;    
+    display: flex; 
+    align-items: center;
+}
+
+.toolbar-options:hover{
+    background-color: #ddd;
+}
+
+.toolbar-options div{
+    margin: auto; 
+    vertical-align: middle;
+}
