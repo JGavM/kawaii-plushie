@@ -59,14 +59,14 @@ export class ManagementPasswordchangeComponent implements OnInit {
         let token = bodyJson.token
         localStorage.setItem('cutie-plushie-token',token);
         alert('Su contraseña se ha cambiado con éxito!');
+        this.router.navigate(['management/home']);
       } else if(res.status == 401) {
         alert('Sus credenciales han expirado. Por favor inicie sesión de nuevo.');
         localStorage.removeItem('cutie-plushie-token');
-        localStorage.getItem('user-details');
+        localStorage.removeItem('user-details');
         this.router.navigate(['management/login']);
       } else if(res.status == 403) {
         alert("Su contraseña anterior no coincide con los registros. Por favor intente de nuevo.");
-        this.router.navigate(['management/home']);
       }
     }
   
