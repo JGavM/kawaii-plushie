@@ -11,7 +11,7 @@ import { ManagementSuppliersComponent } from './management/management-suppliers/
 import { ManagementDistributorsComponent } from './management/management-distributors/management-distributors.component';
 import { ManagementSalesComponent } from './management/management-sales/management-sales.component';
 import { ManagementProductsComponent } from './management/management-products/management-products.component';
-
+import { ManagementPasswordchangeComponent } from './management/management-passwordchange/management-passwordchange.component';
 
 const routes: Routes = [
   { 
@@ -25,7 +25,8 @@ const routes: Routes = [
       { path: 'suppliers', component: ManagementSuppliersComponent, canActivate : [AuthGuardService] },
       { path: 'distributors', component: ManagementDistributorsComponent, canActivate : [AuthGuardService] },
       { path: 'sales', component: ManagementSalesComponent, canActivate : [AuthGuardService] },
-      { path: 'products', component: ManagementProductsComponent, canActivate : [AuthGuardService] }
+      { path: 'products', component: ManagementProductsComponent, canActivate : [AuthGuardService] },
+      { path: 'passwordchange', component: ManagementPasswordchangeComponent, canActivate : [AuthGuardService] }
     ]
   }
 ];
