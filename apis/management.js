@@ -513,6 +513,9 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
             userGroup: userGroup,
             token
           });
+        } else {
+          res.status(401).send("Unauthorized");
+          return;
         }
       });
     });
