@@ -415,7 +415,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
     mssql.connect(dataBaseConfig, function (err) {
       
       if(req.user.userGroup != "ADMIN"){
-        res.status(401).send("Unauthorized");
+        res.status(403).send("Forbidden");
         return;
       }
   
@@ -523,7 +523,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
   app.post('/api/v1/management/products/', passport.authenticate('jwt', { session: false }), function (req, res) {
     
     if(req.user.userGroup != "ADMIN"){
-      res.status(401).send("Unauthorized");
+      res.status(403).send("Forbidden");
       return;
     }
   
@@ -589,7 +589,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
     mssql.connect(dataBaseConfig, function (err) {
       
       if(req.user.userGroup != "ADMIN"){
-        res.status(401).send("Unauthorized");
+        res.status(403).send("Forbidden");
         return;
       }
   
@@ -649,7 +649,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
     mssql.connect(dataBaseConfig, function (err) {
       
         if(req.user.userGroup != "ADMIN"){
-            res.status(401).send("Unauthorized");
+            res.status(403).send("Forbidden");
             return;
         }
 
@@ -697,7 +697,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
         mssql.connect(dataBaseConfig, function (err) {
     
         if(req.user.userGroup != "ADMIN"){
-            res.status(401).send("Unauthorized");
+            res.status(403).send("Forbidden");
             return;
         }
 
@@ -742,7 +742,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
         mssql.connect(dataBaseConfig, function (err) {
     
         if(req.user.userGroup != "ADMIN"){
-            res.status(401).send("Unauthorized");
+            res.status(403).send("Forbidden");
             return;
         }
 
@@ -791,7 +791,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
         mssql.connect(dataBaseConfig, function (err) {
     
         if(req.user.userGroup != "ADMIN"){
-            res.status(401).send("Unauthorized");
+            res.status(403).send("Forbidden");
             return;
         }
 
@@ -857,7 +857,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
             let pwdCurrent = sjcl.decrypt("secretkey",records.recordset[0].User_Password);
 
             if(pwdCurrent != pwdOld){
-                res.status(401).send("Unauthorized");
+                res.status(403).send("Forbidden");
                 return;
             }
     
