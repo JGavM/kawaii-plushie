@@ -23,6 +23,7 @@ export class ManagementComponent implements OnInit {
   goTo(event: any) {
     let target = event.target.className;
     target = target.replace('toolbar-options ','');
+    target = target.replace(' ng-star-inserted','');
     this.router.navigate(['management/' + target]);
   }
 

@@ -6,6 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatSortModule } from '@angular/material/sort';
 
@@ -22,6 +23,7 @@ import { ManagementLoginComponent } from './management/management-login/manageme
 import { ManagementPasswordchangeComponent } from './management/management-passwordchange/management-passwordchange.component';
 
 import { MatPaginatorIntlEsp } from './management/customPaginatorLabels';
+import { ProductDialogFormComponent } from './management/management-products/product-dialog-form/product-dialog-form.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +36,8 @@ import { MatPaginatorIntlEsp } from './management/customPaginatorLabels';
     ManagementDistributorsComponent,
     ManagementSalesComponent,
     ManagementProductsComponent,
-    ManagementPasswordchangeComponent
+    ManagementPasswordchangeComponent,
+    ProductDialogFormComponent
   ],
   imports: [
     BrowserModule,
@@ -47,12 +50,16 @@ import { MatPaginatorIntlEsp } from './management/customPaginatorLabels';
     MatPaginatorModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSortModule
+    MatSortModule,
+    MatDialogModule
   ],
   providers: [
     HttpClientModule,
     { provide: MatPaginatorIntl, useClass: MatPaginatorIntlEsp}
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [
+    ProductDialogFormComponent
+  ],
 })
 export class AppModule { }
