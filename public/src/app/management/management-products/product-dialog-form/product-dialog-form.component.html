@@ -1,0 +1,64 @@
+<div class="form">
+    <h1 mat-dialog-title *ngIf="formType == 'Create'">Agregar producto</h1>
+    <h1 mat-dialog-title *ngIf="formType == 'Update'">Actualizar producto</h1>
+    <form [formGroup]="productForm">
+        <div class="form-group">
+            <label for="productName">Nombre del producto*</label>
+            <input type="text" formControlName="productName" class="form-control" [ngClass]="{ 'is-invalid': submitted &&  productForm.controls.productName.invalid }" />
+            <div *ngIf="submitted &&  productForm.controls.productName.invalid" class="invalid-feedback">
+                <div *ngIf="submitted && productForm.controls.productName.errors.required">Por favor ingrese el nombre</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="productDescription">Descripción*</label>
+            <textarea formControlName="productDescription" [ngClass]="{ 'is-invalid': submitted &&  productForm.controls.productDescription.invalid }"></textarea>
+            <div *ngIf="submitted &&  productForm.controls.productDescription.invalid" class="invalid-feedback">
+                <div *ngIf="submitted && productForm.controls.productDescription.errors.required">Por favor ingrese una descripción</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="productUnitPriceMXN">Precio (MXN)*</label>
+            <input type="text" formControlName="productUnitPriceMXN" class="form-control" [ngClass]="{ 'is-invalid': submitted &&  productForm.controls.productUnitPriceMXN.invalid }" />
+            <div *ngIf="submitted &&  productForm.controls.productUnitPriceMXN.invalid" class="invalid-feedback">
+                <div *ngIf="submitted && productForm.controls.productUnitPriceMXN.errors.required">Por favor introduzca el precio</div>
+            </div>
+        </div>
+        <div class="form-group" *ngIf="formType == 'Update'">
+            <label for="productActiveDiscount">Descuento*</label>
+            <input type="text" formControlName="productActiveDiscount" class="form-control" [ngClass]="{ 'is-invalid': submitted &&  productForm.controls.productActiveDiscount.invalid }" />
+            <div *ngIf="submitted &&  productForm.controls.productActiveDiscount.invalid" class="invalid-feedback">
+                <div *ngIf="submitted && productForm.controls.productActiveDiscount.errors.required">Por favor introduzca un descuento</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="supplier">Proveedor*</label>
+            <select class="form-control" formControlName="supplier">
+                <option value="">Seleccione una opción...</option>
+                <option *ngFor="let supplier of suppliers" [ngValue]="supplier.supplierId">{{supplier.supplierName}}</option>
+             </select>
+             <div *ngIf="submitted &&  productForm.controls.supplier.invalid" class="invalid-feedback">
+                <div *ngIf="submitted &&  productForm.controls.supplier.errors.required">
+                    Por favor seleccione una opción
+                </div>
+            </div>
+        </div>
+        <div class="form-group" *ngIf="formType == 'Create'">
+            <label for="category">Categoría*</label>
+            <select class="form-control" formControlName="category">
+                <option value="">Seleccione una opción...</option>
+                <option *ngFor="let category of categories" [ngValue]="category.categoryId">{{category.categoryName}}</option>
+             </select>
+             <div *ngIf="submitted &&  productForm.controls.category.invalid" class="invalid-feedback">
+                <div *ngIf="submitted &&  productForm.controls.category.errors.required">
+                    Por favor seleccione una opción
+                </div>
+            </div>
+        </div>
+        <div class="form-buttons">
+            <button (click)="createProduct()" class="btn-create" *ngIf="formType == 'Create'">Agregar</button>
+            <button (click)="updateProduct()" class="btn-update" *ngIf="formType == 'Update'">Actualizar</button>
+            <button (click)="closeDialog()" class="btn-cancel">Cancelar</button>
+          </div>
+    </form>
+    
+</div>

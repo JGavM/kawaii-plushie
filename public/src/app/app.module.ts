@@ -4,7 +4,11 @@ import { FormsModule, ReactiveFormsModule }   from '@angular/forms';
 import { HttpClientModule} from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginatorIntl } from '@angular/material/paginator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatInputModule } from '@angular/material/input';
+import { MatSortModule } from '@angular/material/sort';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -18,6 +22,9 @@ import { ManagementProductsComponent } from './management/management-products/ma
 import { ManagementLoginComponent } from './management/management-login/management-login.component';
 import { ManagementPasswordchangeComponent } from './management/management-passwordchange/management-passwordchange.component';
 
+import { MatPaginatorIntlEsp } from './management/customPaginatorLabels';
+import { ProductDialogFormComponent } from './management/management-products/product-dialog-form/product-dialog-form.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -29,7 +36,8 @@ import { ManagementPasswordchangeComponent } from './management/management-passw
     ManagementDistributorsComponent,
     ManagementSalesComponent,
     ManagementProductsComponent,
-    ManagementPasswordchangeComponent
+    ManagementPasswordchangeComponent,
+    ProductDialogFormComponent
   ],
   imports: [
     BrowserModule,
@@ -39,11 +47,19 @@ import { ManagementPasswordchangeComponent } from './management/management-passw
     HttpClientModule,
     BrowserAnimationsModule,
     MatTableModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSortModule,
+    MatDialogModule
   ],
   providers: [
     HttpClientModule,
+    { provide: MatPaginatorIntl, useClass: MatPaginatorIntlEsp}
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [
+    ProductDialogFormComponent
+  ],
 })
 export class AppModule { }

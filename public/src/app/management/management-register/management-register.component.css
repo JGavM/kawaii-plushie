@@ -16,11 +16,10 @@ label{
     z-index:1;
     border-radius:25px;
     overflow:hidden;
-    margin:0 15%;
+    margin: 25%;
     display:flex;
     flex-wrap:wrap;
     justify-content:center;
-    padding-top:13px;
     font-family: poppins-bold;
     font-size:15px;
     font-style: bold;
