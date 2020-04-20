@@ -4,7 +4,10 @@ import { FormsModule, ReactiveFormsModule }   from '@angular/forms';
 import { HttpClientModule} from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginatorIntl } from '@angular/material/paginator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSortModule } from '@angular/material/sort';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -17,6 +20,8 @@ import { ManagementSalesComponent } from './management/management-sales/manageme
 import { ManagementProductsComponent } from './management/management-products/management-products.component';
 import { ManagementLoginComponent } from './management/management-login/management-login.component';
 import { ManagementPasswordchangeComponent } from './management/management-passwordchange/management-passwordchange.component';
+
+import { MatPaginatorIntlEsp } from './management/customPaginatorLabels';
 
 @NgModule({
   declarations: [
@@ -39,10 +44,14 @@ import { ManagementPasswordchangeComponent } from './management/management-passw
     HttpClientModule,
     BrowserAnimationsModule,
     MatTableModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSortModule
   ],
   providers: [
     HttpClientModule,
+    { provide: MatPaginatorIntl, useClass: MatPaginatorIntlEsp}
   ],
   bootstrap: [AppComponent]
 })

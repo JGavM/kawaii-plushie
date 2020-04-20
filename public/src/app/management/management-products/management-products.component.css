@@ -6,13 +6,16 @@ h1{
 
 mat-form-field {
     font-size: 18px;
-    width: 100%;
-    margin-left:10%;
-    
+    width: 75%;
+    margin-left: 5%;
+}
+
+mat-paginator{
+    width: 95%;
 }
 
 table {
-    width: 80%;
+    width: 90%;
     margin: auto;
 }
 
@@ -22,11 +25,49 @@ th{
     font-size: 18px;
 }
 
+.btn-create{
+    width: 10%;
+    height:30px;
+    border-radius:25px;
+    justify-content:center;
+    font-family: poppins-bold;
+    font-size:14px;
+    line-height:1.2;
+    text-transform:uppercase;
+    align-items:center;
+    background-color: #CBFBEF;
+    margin-left: 5%;
+}
+
+.btn-delete{
+    width: 40%;
+    height:30px;
+    border-radius:25px;
+    justify-content:center;
+    font-family: poppins-bold;
+    font-size:14px;
+    line-height:1.2;
+    text-transform:uppercase;
+    align-items:center;
+    background-color: #FFCDDC;
+    margin-right: 10px;
+}
+
+.btn-edit{
+    width: 40%;
+    height:30px;
+    border-radius:25px;
+    justify-content:center;
+    font-family: poppins-bold;
+    font-size:14px;
+    line-height:1.2;
+    text-transform:uppercase;
+    align-items:center;
+    background-color: #C4E6FF;
+}
+
 .filter-box{
     width: 75%;
-    margin-left: 25px;
-    margin-bottom: 20px;
-    border-bottom:2px solid #adadad;
     font-size:20px;
     color:#555;
     height:35px;
@@ -34,8 +75,19 @@ th{
     align-content: flex-end;
 }
 
-.table-container{
-    margin-left: 5%;
-    margin-right: 5%;
+td{
+    padding: 15px;
+}
 
+.mat-column-actions{
+    width: 15%;
+}
+
+.mat-column-productDescription{
+    width: 40%;
+}
+
+.table-container{
+    margin: auto;
+    width: 90%;
 }
