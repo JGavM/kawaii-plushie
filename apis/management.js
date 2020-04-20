@@ -119,6 +119,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
       "SELECT p.Product_ID, p.Product_Name, p.Product_Description, p.Product_Unit_Price_MXN, p.Product_Icon, p.Active, p.Product_Active_Discount, p.Supplier_ID, p.Category_ID,"+
       "s.Supplier_Name, c.Category_Name "+
       "FROM (dbo.Products AS p INNER JOIN dbo.Suppliers AS s ON p.Supplier_ID = s.Supplier_ID) "+
+      "WHERE p.Active = 1 " +
       "INNER JOIN dbo.Categories AS c ON p.Category_ID = c.Category_ID "+
       "ORDER BY p.Product_ID " +
       "OFFSET " + offset + " * " + (page-1) + " ROWS FETCH NEXT " + offset + " ROWS ONLY;", 
