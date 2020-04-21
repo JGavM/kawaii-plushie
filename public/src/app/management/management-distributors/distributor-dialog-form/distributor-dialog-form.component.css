@@ -1,0 +1,84 @@
+h1{
+    text-align: center;
+}
+
+label{
+    text-align: right;
+    width: 200px;
+    margin: 20px;
+}
+
+textarea{
+    width: 300px;
+    height: 60px;
+    resize: none;
+}
+
+.btn-create{
+    height:30px;
+    border-radius:25px;
+    justify-content:center;
+    font-family: poppins-bold;
+    font-size:14px;
+    text-transform:uppercase;
+    align-items:center;
+    background-color: #CBFBEF;
+    width: 50%;
+}
+
+.btn-cancel{
+    height:30px;
+    border-radius:25px;
+    justify-content:center;
+    font-family: poppins-bold;
+    font-size:14px;
+    text-transform:uppercase;
+    align-items:center;
+    background-color: #FFCDDC;
+    width: 50%;
+}
+
+.btn-update{
+    width: 50%;
+    height:30px;
+    border-radius:25px;
+    justify-content:center;
+    font-family: poppins-bold;
+    font-size:14px;
+    text-transform:uppercase;
+    align-items:center;
+    background-color: #C4E6FF;
+}
+
+.form-control{
+    font-size:14px;
+    color:#555;
+    width:30%;
+    height:35px;
+    background:0 0;
+    padding: 5px;
+  }
+
+.form-group{
+    height: 25%;
+    margin: 10px;
+    vertical-align: middle;
+    display: flex; 
+    align-items: center;
+}
+
+.form-buttons{
+    height:40px;
+    margin: 20px auto 0;
+    width: 40%;
+}
+
+.invalid-feedback{
+    margin-left:10px;
+    color:#ff88ac;
+  }
+  
+
+.ng-invalid:not(form)  {
+    border-left: 5px solid #ff88ac; /* red */
+}

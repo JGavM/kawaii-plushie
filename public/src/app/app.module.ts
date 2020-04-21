@@ -25,6 +25,7 @@ import { ManagementPasswordchangeComponent } from './management/management-passw
 import { MatPaginatorIntlEsp } from './management/customPaginatorLabels';
 import { ProductDialogFormComponent } from './management/management-products/product-dialog-form/product-dialog-form.component';
 import { SupplierDialogFormComponent } from './management/management-suppliers/supplier-dialog-form/supplier-dialog-form.component';
+import { DistributorDialogFormComponent } from './management/management-distributors/distributor-dialog-form/distributor-dialog-form.component';
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import { SupplierDialogFormComponent } from './management/management-suppliers/s
     ManagementPasswordchangeComponent,
     ProductDialogFormComponent,
     SupplierDialogFormComponent,
+    DistributorDialogFormComponent,
   ],
   imports: [
     BrowserModule,
@@ -62,7 +64,8 @@ import { SupplierDialogFormComponent } from './management/management-suppliers/s
   bootstrap: [AppComponent],
   entryComponents: [
     ProductDialogFormComponent,
-    SupplierDialogFormComponent
+    SupplierDialogFormComponent,
+    DistributorDialogFormComponent
   ],
 })
 export class AppModule { }
