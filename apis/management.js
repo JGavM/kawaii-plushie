@@ -297,6 +297,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
   
       let request = new mssql.Request();
       let page = parseInt(req.query.page);  
+      let salesPerPage = parseInt(req.query.salesPerPage);  
       // Query to the database and get the records
       request.query("SELECT	s.Sale_ID, s.Order_ID, s.Sale_Applied_Discount, s.Sale_Date, s.Delivery_ID, "+
           "o.Customer_ID, o.Order_Status, "+
@@ -313,8 +314,8 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
           "INNER JOIN dbo.Categories AS cat ON p.Category_ID = cat.Category_ID) "+
           "INNER JOIN dbo.Deliveries AS d ON s.Delivery_ID = d.Delivery_ID "+
       "ORDER BY s.Order_ID, s.Sale_ID "+
-      "OFFSET 100 * " + (page-1) + " ROWS "+
-      "FETCH NEXT 100 ROWS ONLY;", 
+      "OFFSET " + salesPerPage + " * " + (page-1) + " ROWS "+
+      "FETCH NEXT " + salesPerPage + " ROWS ONLY;", 
       function (err, records) {
           
         if (err){
