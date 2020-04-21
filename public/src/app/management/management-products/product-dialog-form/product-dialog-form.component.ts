@@ -139,7 +139,7 @@ export class ProductDialogFormComponent implements OnInit {
       alert('Sus credenciales han expirado. Por favor inicie sesión de nuevo.');
       localStorage.removeItem('cutie-plushie-token');
       localStorage.removeItem('user-details');
-      this.router.navigate(['management/login']);
+      window.location.reload();
     }
   }
 
