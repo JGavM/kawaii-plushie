@@ -1081,7 +1081,7 @@ __webpack_require__.r(__webpack_exports__);
  * @suppress {suspiciousCode,uselessCode,missingProperties,missingOverride,checkTypes}
  * tslint:disable
  */ 
-var styles = ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJtYW5hZ2VtZW50L21hbmFnZW1lbnQtaG9tZS9tYW5hZ2VtZW50LWhvbWUuY29tcG9uZW50LmNzcyJ9 */"];
+var styles = [".home-page[_ngcontent-%COMP%] {\r\n    text-align: center;\r\n    height: 50%;\r\n    margin: 10%;\r\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1hbmFnZW1lbnQvbWFuYWdlbWVudC1ob21lL21hbmFnZW1lbnQtaG9tZS5jb21wb25lbnQuY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0lBQ0ksa0JBQWtCO0lBQ2xCLFdBQVc7SUFDWCxXQUFXO0FBQ2YiLCJmaWxlIjoibWFuYWdlbWVudC9tYW5hZ2VtZW50LWhvbWUvbWFuYWdlbWVudC1ob21lLmNvbXBvbmVudC5jc3MiLCJzb3VyY2VzQ29udGVudCI6WyIuaG9tZS1wYWdlIHtcclxuICAgIHRleHQtYWxpZ246IGNlbnRlcjtcclxuICAgIGhlaWdodDogNTAlO1xyXG4gICAgbWFyZ2luOiAxMCU7XHJcbn0iXX0= */"];
 
 
 
@@ -1115,7 +1115,7 @@ __webpack_require__.r(__webpack_exports__);
 var styles_ManagementHomeComponent = [_management_home_component_css_shim_ngstyle__WEBPACK_IMPORTED_MODULE_0__["styles"]];
 var RenderType_ManagementHomeComponent = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵcrt"]({ encapsulation: 0, styles: styles_ManagementHomeComponent, data: {} });
 
-function View_ManagementHomeComponent_0(_l) { return _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵvid"](0, [(_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵeld"](0, 0, null, null, 1, "p", [], null, null, null, null, null)), (_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵted"](-1, null, ["management-home works!"]))], null, null); }
+function View_ManagementHomeComponent_0(_l) { return _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵvid"](0, [(_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵeld"](0, 0, null, null, 8, "div", [["class", "home-page"]], null, null, null, null, null)), (_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵeld"](1, 0, null, null, 1, "h1", [], null, null, null, null, null)), (_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵted"](2, null, [" Hola ", "! "])), (_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵeld"](3, 0, null, null, 1, "h2", [], null, null, null, null, null)), (_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵted"](-1, null, [" Bienvenido a Cutie Plushie Management System. "])), (_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵeld"](5, 0, null, null, 0, "br", [], null, null, null, null, null)), (_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵeld"](6, 0, null, null, 1, "h3", [], null, null, null, null, null)), (_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵted"](-1, null, [" Haz clic en las opciones del men\u00FA para comenzar. "])), (_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵeld"](8, 0, null, null, 0, "img", [["alt", "Logo"], ["height", "200px"], ["src", "assets/images/cutie_plushie_logo.png"]], null, null, null, null, null))], null, function (_ck, _v) { var _co = _v.component; var currVal_0 = _co.userName; _ck(_v, 2, 0, currVal_0); }); }
 function View_ManagementHomeComponent_Host_0(_l) { return _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵvid"](0, [(_l()(), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵeld"](0, 0, null, null, 1, "app-management-home", [], null, null, null, View_ManagementHomeComponent_0, RenderType_ManagementHomeComponent)), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵdid"](1, 114688, null, 0, _management_home_component__WEBPACK_IMPORTED_MODULE_2__["ManagementHomeComponent"], [], null, null)], function (_ck, _v) { _ck(_v, 1, 0); }, null); }
 var ManagementHomeComponentNgFactory = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵccf"]("app-management-home", _management_home_component__WEBPACK_IMPORTED_MODULE_2__["ManagementHomeComponent"], View_ManagementHomeComponent_Host_0, {}, {}, []);
 
@@ -1136,7 +1136,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm2015/core.js");
 
 class ManagementHomeComponent {
-    constructor() { }
+    constructor() {
+        this.userName = JSON.parse(localStorage.getItem('user-details')).userName;
+    }
     ngOnInit() {
     }
 }

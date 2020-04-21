@@ -7,6 +7,8 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ManagementHomeComponent implements OnInit {
 
+  userName = JSON.parse(localStorage.getItem('user-details')).userName;
+
   constructor() { }
 
   ngOnInit(): void {
