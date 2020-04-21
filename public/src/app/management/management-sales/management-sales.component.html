@@ -1,1 +1,82 @@
-<p>management-sales works!</p>
+<div class="sales-component">
+    <div class="table-container">
+        <h1>
+            Ventas
+        </h1>
+
+        <mat-form-field>
+            <input class="filter-box" matInput (keyup)="applyFilter($event)" placeholder="Buscar..."/>
+        </mat-form-field>
+        <button mat-button class="btn-export" (click)="exporter.exportTable('csv', {fileName: 'Reporte_de_ventas'})">
+            Exportar
+        </button>
+
+        <table mat-table matTableExporter [dataSource]="dataSource" #exporter="matTableExporter" class="mat-elevation-z8" matSort>
+          
+            <ng-container matColumnDef="saleDate">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha </th>
+              <td mat-cell *matCellDef="let sale"> {{sale.saleDate.split('T')[0]}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="articleId">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Código de artículo </th>
+                <td mat-cell *matCellDef="let sale"> {{sale.article.articleId}} </td>
+              </ng-container>
+
+            <ng-container matColumnDef="productId">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> ID de producto </th>
+            <td mat-cell *matCellDef="let sale"> {{sale.article.product.productId}} </td>
+            </ng-container>
+          
+            <ng-container matColumnDef="productName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre del producto </th>
+              <td mat-cell *matCellDef="let sale"> {{sale.article.product.productName}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="productUnitPriceMXN">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Precio </th>
+                <td mat-cell *matCellDef="let sale"> {{sale.article.product.productPrice}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="saleAppliedDiscount">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Descuento </th>
+                <td mat-cell *matCellDef="let sale"> {{sale.saleAppliedDiscount}} </td>
+            </ng-container>
+          
+            <ng-container matColumnDef="orderId">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> Número de orden </th>
+              <td mat-cell *matCellDef="let sale"> {{sale.order.orderId}} </td>
+            </ng-container>
+    
+            <ng-container matColumnDef="orderStatus">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Estatus de orden </th>
+                <td mat-cell *matCellDef="let sale"> {{orderStatusDictionary[sale.order.orderStatus]}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="customerName">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Cliente </th>
+                <td mat-cell *matCellDef="let sale"> {{sale.order.customer.customerName + ' ' + sale.order.customer.customerLastName}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="deliveryDate">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha de envío </th>
+                <td mat-cell *matCellDef="let sale"> {{sale.delivery.deliveryDate.split('T')[0]}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="expectedArrivalDate">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha estimada de llegada </th>
+                <td mat-cell *matCellDef="let sale"> {{sale.delivery.expectedArrivalDate.split('T')[0]}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actualArrivalDate">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha de llegada </th>
+                <td mat-cell *matCellDef="let sale"> {{sale.delivery.actualArrivalDate?sale.delivery.actualArrivalDate.split('T')[0]:''}} </td>
+            </ng-container>
+          
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            
+        </table>
+        <mat-paginator [length]="dataSource.data.length" [pageSizeOptions]="[10, 25, 50, 100]"></mat-paginator>
+    </div>
+</div>

@@ -10,6 +10,8 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatSortModule } from '@angular/material/sort';
 
+import { MatTableExporterModule } from 'mat-table-exporter';
+
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ManagementComponent } from './management/management.component';
@@ -55,7 +57,8 @@ import { DistributorDialogFormComponent } from './management/management-distribu
     MatFormFieldModule,
     MatInputModule,
     MatSortModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTableExporterModule
   ],
   providers: [
     HttpClientModule,
