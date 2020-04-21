@@ -7,15 +7,15 @@
         <mat-form-field>
             <input class="filter-box" matInput (keyup)="applyFilter($event)" placeholder="Buscar..."/>
         </mat-form-field>
-        <button class="btn-export" (click)="export()">
+        <button mat-button class="btn-export" (click)="exporter.exportTable('csv', {fileName: 'Reporte_de_ventas'})">
             Exportar
         </button>
 
-        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort>
+        <table mat-table matTableExporter [dataSource]="dataSource" #exporter="matTableExporter" class="mat-elevation-z8" matSort>
           
             <ng-container matColumnDef="saleDate">
               <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha </th>
-              <td mat-cell *matCellDef="let sale"> {{sale.saleDate}} </td>
+              <td mat-cell *matCellDef="let sale"> {{sale.saleDate.split('T')[0]}} </td>
             </ng-container>
 
             <ng-container matColumnDef="articleId">
@@ -31,6 +31,16 @@
             <ng-container matColumnDef="productName">
               <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre del producto </th>
               <td mat-cell *matCellDef="let sale"> {{sale.article.product.productName}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="productUnitPriceMXN">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Precio </th>
+                <td mat-cell *matCellDef="let sale"> {{sale.article.product.productPrice}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="saleAppliedDiscount">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Descuento </th>
+                <td mat-cell *matCellDef="let sale"> {{sale.saleAppliedDiscount}} </td>
             </ng-container>
           
             <ng-container matColumnDef="orderId">
@@ -48,24 +58,19 @@
                 <td mat-cell *matCellDef="let sale"> {{sale.order.customer.customerName + ' ' + sale.order.customer.customerLastName}} </td>
             </ng-container>
 
-            <ng-container matColumnDef="deliveryId">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Código del envío </th>
-                <td mat-cell *matCellDef="let sale"> {{sale.delivery.deliveryId}} </td>
-            </ng-container>
-
             <ng-container matColumnDef="deliveryDate">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha de envío </th>
-                <td mat-cell *matCellDef="let sale"> {{sale.delivery.deliveryDate}} </td>
+                <td mat-cell *matCellDef="let sale"> {{sale.delivery.deliveryDate.split('T')[0]}} </td>
             </ng-container>
 
             <ng-container matColumnDef="expectedArrivalDate">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha estimada de llegada </th>
-                <td mat-cell *matCellDef="let sale"> {{sale.delivery.expectedArrivalDate}} </td>
+                <td mat-cell *matCellDef="let sale"> {{sale.delivery.expectedArrivalDate.split('T')[0]}} </td>
             </ng-container>
 
             <ng-container matColumnDef="actualArrivalDate">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha de llegada </th>
-                <td mat-cell *matCellDef="let sale"> {{sale.delivery.actualArrivalDate}} </td>
+                <td mat-cell *matCellDef="let sale"> {{sale.delivery.actualArrivalDate?sale.delivery.actualArrivalDate.split('T')[0]:''}} </td>
             </ng-container>
           
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

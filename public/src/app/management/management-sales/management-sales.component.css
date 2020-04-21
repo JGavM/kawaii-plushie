@@ -11,11 +11,11 @@ mat-form-field {
 }
 
 mat-paginator{
-    width: 95%;
+    width: 100%;
 }
 
 table {
-    width: 90%;
+    width: 95%;
     margin: auto;
 }
 
@@ -50,13 +50,10 @@ th{
 
 td{
     padding: 15px;
-}
-
-.mat-column-actions{
-    width: 15%;
+    font-size: 12px;
 }
 
 .table-container{
     margin: auto;
-    width: 90%;
+    width: 95%;
 }
