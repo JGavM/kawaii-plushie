@@ -586,6 +586,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         }
 
         res.send(orders);
+      });
     });
   });
   
