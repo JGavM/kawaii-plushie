@@ -11,7 +11,7 @@
                     <p>Enterate de nuestras promociones, obten descuentos exlusivos y mucho más...</p>
                     <form>
                         <input class="input" placeholder="Correo electrónico">
-                        <button class="search-btn">Registrarse</button>
+                        <button class="search-btn" [routerLink]="['/register']">Registrarse</button>
                     </form>
                 </div>
             </div>
@@ -23,7 +23,7 @@
           <div class="footer">
             <h3 class="footer-title">Conocenos</h3>
             <ul class="footer-links">
-                <li><a href="">Acerca de nosotros</a></li>
+                <li><a [routerLink]="['/aboutUs']" >Acerca de nosotros</a></li>
             </ul>
           </div>
         </div>
@@ -31,8 +31,8 @@
           <div class="footer">
             <h3 class="footer-title">Ayuda</h3>
             <ul class="footer-links">
-              <li><a href="#">Contactanos</a></li>
-              <li><a href="#">Preguntas frecuentes</a></li>
+              <li><a >Contactanos</a></li>
+              <li><a [routerLink]="['/fagPage']">Preguntas frecuentes</a></li>
             </ul>
           </div>
         </div>
@@ -41,9 +41,9 @@
           <div class="footer">
             <h3 class="footer-title">Información</h3>
             <ul class="footer-links">
-              <li><a href="#">Promociones y cupones</a></li>
-              <li><a href="#">Politica de privacidad</a></li>
-              <li><a href="#">Terminos y condiciones</a></li>
+              <li><a [routerLink]="['/salesCupons']">Promociones y cupones</a></li>
+              <li><a [routerLink]="['/privacyPolicy']">Politica de privacidad</a></li>
+              <li><a [routerLink]="['/termsConditions']">Terminos y condiciones</a></li>
             </ul>
           </div>
         </div>
