@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClient, HttpResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClientModule} from '@angular/common/http';
 
 import { HomeComponent } from './pages/home/home.component';
 import { CategoriesPagesComponent } from './pages/categories-pages/categories-pages.component';
@@ -28,14 +28,6 @@ import { FooterComponent } from './components/footer/footer.component';
 @NgModule({
   declarations: [
     AppComponent,
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    MaterialModule,
-    FormsModule,
-    ReactiveFormsModule,
     HomeComponent,
     CategoriesPagesComponent,
     ProductInfoComponent,
@@ -52,6 +44,15 @@ import { FooterComponent } from './components/footer/footer.component';
     RegisterComponent,
     HeaderComponent,
     FooterComponent,
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    BrowserAnimationsModule,
+    MaterialModule,
+    FormsModule,
+    ReactiveFormsModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent],
