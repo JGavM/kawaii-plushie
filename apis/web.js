@@ -481,8 +481,8 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
     });
   });
 
-  // Get product by ID
-  app.get('/api/v1/web/orders/:customerId', function (req, res) {
+  // Get orders by customer
+  app.get('/api/v1/web/orders/', passport.authenticate('jwt', { session: false }), function (req, res) {
     mssql.connect(dataBaseConfig, function (err) {
       
       if (err){
@@ -490,7 +490,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       }
   
       let request = new mssql.Request();
-      let customerId = req.params.customerId;
+      let customerId = req.customer.customerId;
 
       if(customerId.includes("=")){
         res.status(403).send("Forbidden");
@@ -647,7 +647,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
    */
   
   // Create new address
-  app.post('/api/v1/web/addresses/', function (req, res) {
+  app.post('/api/v1/web/addresses/', passport.authenticate('jwt', { session: false }), function (req, res) {
     mssql.connect(dataBaseConfig, function (err) {
       
       if (err){
@@ -677,7 +677,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         let addressZipCode = req.body.zipCode;
         let addressState = req.body.state;
         let addressCity = req.body.city;
-        let customerId = req.body.customer;
+        let customerId = req.customer.customerId;
           
         // Query to the database and get the records
         request.query("INSERT INTO dbo.Addresses VALUES('" + 
@@ -799,7 +799,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
    */
   
    // Update address
-  app.put('/api/v1/web/addresses/:addressId', function (req, res) {
+  app.put('/api/v1/web/addresses/:addressId', passport.authenticate('jwt', { session: false }), function (req, res) {
     mssql.connect(dataBaseConfig, function (err) {
   
       if (err){
@@ -817,6 +817,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       let addressZipCode = req.body.zipCode;
       let addressState = req.body.state;
       let addressCity = req.body.city;
+      let customerId = req.customer.customerId;
         
       // Query to the database and get the records
       request.query("UPDATE dbo.Addresses SET " + 
@@ -827,7 +828,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       "Address_ZIP_Code = '" + addressZipCode + "', " + 
       "Address_State = '" + addressState + "', " + 
       "Address_City = '" + addressCity + "' " + 
-      "WHERE Address_ID = '" + addressId + "';", 
+      "WHERE Address_ID = '" + addressId + "' AND Customer_ID = '" + customerId +"';", 
       function (err, records) {
           
           if (err){
@@ -843,7 +844,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
   });
   
    // Update avatar
-   app.put('/api/v1/web/customers/:customerId/avatar/', function (req, res) {
+   app.put('/api/v1/web/avatar/', passport.authenticate('jwt', { session: false }), function (req, res) {
     mssql.connect(dataBaseConfig, function (err) {
   
       if (err){
@@ -853,7 +854,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
   
       let request = new mssql.Request();
   
-      let customerId = req.params.customerId;
+      let customerId = req.customer.customerId;
       let avatarId = req.body.avatarId;
   
       // Query to the database and get the records
