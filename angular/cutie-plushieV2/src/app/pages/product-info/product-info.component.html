@@ -1,0 +1,39 @@
+<!--PRODUCT-->
+<mat-grid-list cols="2" rowHeight="1:1">
+    <mat-grid-tile>
+      <img mat-card-image src="dfg" alt="Photo of a Shiba Inu">
+    </mat-grid-tile>
+    
+    <mat-grid-tile>
+       <mat-list>
+    <mat-list-item><p>Nombre del producto</p></mat-list-item>
+    <mat-list-item><p>Reseñas</p></mat-list-item>
+    <mat-list-item><p>Precio</p></mat-list-item>
+    <mat-list-item><p>Acerca de nosotros</p></mat-list-item>
+    <mat-list-item><button>Ver mas</button></mat-list-item>
+  </mat-list>
+    </mat-grid-tile>
+    
+  </mat-grid-list>
+  <mat-accordion>
+    <mat-expansion-panel (opened)="panelOpenState = true"
+                         (closed)="panelOpenState = false">
+      <mat-expansion-panel-header>
+        <mat-panel-title>Descripcion</mat-panel-title>
+      </mat-expansion-panel-header>
+      <p>Descripcion del producto</p>
+    </mat-expansion-panel>
+    <mat-expansion-panel (opened)="panelOpenState = true"
+                         (closed)="panelOpenState = false">
+      <mat-expansion-panel-header>
+        <mat-panel-title>Reseñas</mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-card>
+        <mat-card-content>
+          <p>Usuario</p>
+          <p>Reseña</p>
+    </mat-card-content>
+    </mat-card>
+    </mat-expansion-panel>
+  </mat-accordion>
+  <!--/PRODUCT-->
