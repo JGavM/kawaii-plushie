@@ -58,7 +58,7 @@ module.exports = new JwtStrategy(opts, function(jwt_payload, done){
                       customerName: records.recordset[0].Customer_Name,
                       customerLastName: records.recordset[0].Customer_Last_Name
                   };
-                  return done(null, user);
+                  return done(null, customer);
                 } else {
                   return done(null, false)
                 }

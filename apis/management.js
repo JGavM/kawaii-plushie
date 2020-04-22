@@ -45,6 +45,7 @@ app.get('/api/v1/management/categories/', passport.authenticate('jwt', { session
       if (err){
         console.log(err);
         res.send(err);
+        return;
       }
 
       // Send records as a response
@@ -77,12 +78,13 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
         if (err){
           console.log(err);
           res.send(err);
+          return;
         }
   
         // Send records as a response
         let distributors = [];
         for(let distributor of records.recordset){
-        distributorJSON = {
+          distributorJSON = {
             distributorId: distributor.Distributor_ID,
             distributorName: distributor.Distributor_Name,
             distributorContactName: distributor.Distributor_Contact_Name,
@@ -114,6 +116,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
         if (err){
           console.log(err);
           res.send(err);
+          return;
         }
   
         // Send records as a response
@@ -160,6 +163,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
           if (err){
             console.log(err);
             res.send(err);
+            return;
           }
   
           // Send records as a response
@@ -211,6 +215,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
           if (err){
             console.log(err);
             res.send(err);
+            return;
           }
   
           let products = [];
@@ -265,19 +270,20 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
           if (err){
             console.log(err);
             res.send(err);
+            return;
           }
   
           // Send records as a response
           let products = [];
-        for(let product of records.recordset){
-          productJSON = {
-            productId: product.Product_ID,
-            productName: product.Product_Name,
-            productActiveDiscount: product.Product_Active_Discount,
-            productSales: product.Sales,
-            category: {
-              categoryId: product.Category_ID,
-              categoryName: product.Category_Name,
+          for(let product of records.recordset){
+            productJSON = {
+              productId: product.Product_ID,
+              productName: product.Product_Name,
+              productActiveDiscount: product.Product_Active_Discount,
+              productSales: product.Sales,
+              category: {
+                categoryId: product.Category_ID,
+                categoryName: product.Category_Name,
             }
           };
           products.push(productJSON);
