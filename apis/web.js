@@ -491,10 +491,6 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
   
       let request = new mssql.Request();
       let customerId = req.customer.customerId;
-
-      if(customerId.includes("=")){
-        res.status(403).send("Forbidden");
-      }
         
       // Query to the database and get the records
       request.query("SELECT o.Order_ID, o.Order_Status, o.Address_ID,"+
@@ -861,6 +857,56 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       request.query("UPDATE dbo.Customers SET " + 
       "Avatar_ID = '" + avatarId + "' " + 
       "WHERE Customer_ID = '" + customerId + "';", 
+      function (err, records) {
+          
+          if (err){
+            console.log(err);
+            res.send(err);
+          }
+  
+          // Send records as a response
+          res.send(true);
+          
+      });
+    });
+  });
+
+  // Update card details
+  app.put('/api/v1/web/cards/:cardId', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+  
+      if (err){
+        console.log(err);
+        res.send(err);
+      }
+
+      if(cardId.includes("=")){
+        res.status(403).send("Forbidden");
+      }
+  
+      let request = new mssql.Request();
+  
+      let addressId = req.params.addressId;
+      let addressStreetName = req.body.streetName;
+      let addressExteriorNumber = req.body.exteriorNumber;
+      let addressInteriorNumber = req.body.interiorNumber;
+      let addressResidentialArea = req.body.residentialArea;
+      let addressZipCode = req.body.zipCode;
+      let addressState = req.body.state;
+      let addressCity = req.body.city;
+      let active = req.body.active
+      let customerId = req.customer.customerId;
+        
+      // Query to the database and get the records
+      request.query("UPDATE dbo.Cards SET " + 
+      "Billing_Address_Street_Name = '" + addressStreetName + "', " + 
+      "Billing_Address_Exterior_Number = '" + addressExteriorNumber + "', " + 
+      "Billing_Address_Interior_Number = '" + addressInteriorNumber + "', " + 
+      "Billing_Address_Residential_Area = '" + addressResidentialArea + "', " + 
+      "Billing_Address_ZIP_Code = '" + addressZipCode + "', " + 
+      "Billing_Address_State = '" + addressState + "', " + 
+      "Billing_Address_City = '" + addressCity + "' " + 
+      "WHERE Address_ID = '" + addressId + "' AND Customer_ID = '" + customerId +"';", 
       function (err, records) {
           
           if (err){
