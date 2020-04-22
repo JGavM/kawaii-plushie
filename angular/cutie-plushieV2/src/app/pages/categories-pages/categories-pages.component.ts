@@ -6,6 +6,10 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./categories-pages.component.css']
 })
 export class CategoriesPagesComponent implements OnInit {
+  
+  price = JSON.parse(localStorage.getItem('user-details')).price;
+  description = JSON.parse(localStorage.getItem('user-details')).description;
+  discount = JSON.parse(localStorage.getItem('user-details')).discount;
 
   constructor() { }
 
