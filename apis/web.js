@@ -4,6 +4,21 @@
  * -----------------------------------------
  */
 
+ /**
+  * Setup for e-mail
+  */
+const nodemailer = require('nodemailer');
+
+let transporter = nodemailer.createTransport({
+  host: "smtp.sendgrid.net",
+  port: 587,
+  secure: false,
+  auth: {
+    user: 'azure_a214e14ba8753985d09407c99b042fc1@azure.com',
+    pass: 'Resurgam98*'//atob('UmVzdXJnYW05OCo=')
+  }
+});
+
 /**
  * -----------------------------------------
  * Useful functions
@@ -563,9 +578,9 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
           });
 
           let orderJSON = {
-            orderId = order.Order_ID,
-            orderStatus = order.Order_Status,
-            paymentDate = order.Payment_Date,
+            orderId: order.Order_ID,
+            orderStatus: order.Order_Status,
+            paymentDate: order.Payment_Date,
             address: {
               addressId: order.Address_ID,
               addressStreetName: order.Address_Street_Name,
@@ -707,15 +722,16 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       
       if (err){
         console.log(err);
+        return;
       }
   
       let request = new mssql.Request();
       let customerId = req.body.customerId;
-      let customerName = req.body.name;
-      let customerLastName = req.body.lastName;
+      let customerName = req.body.customerName;
+      let customerLastName = req.body.customerLastName;
       let customerPass = req.body.pwd;
       customerPass = sjcl.encrypt("secretkey",customerPass);
-      let customerDateOfBirth = req.body.dob;
+      let customerDateOfBirth = req.body.customerDateOfBirth;
       let today = new Date();
       let customerRegistrationDate = today.getFullYear() + 
                                     ((today.getMonth()+1)>9?today.getMonth()+1:"0"+(today.getMonth()+1)) +
@@ -737,6 +753,28 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
             res.send(err);
             return
           }
+
+          let welcomeEmail = 
+            "<h1>¡Hola "+ customerName +"!</h1>"+
+            "<br>"+
+            "<h2>¡Muchas gracias por unirte a Cutie Plushie, nos da mucho gusto que estés aquí!</h2>"+
+            "<h2>Haz clic <a href='cutieplushie.azurewebsites.net'>aquí</a> para ver nuestros más nuevos productos. ¡Te van a encantar!</h2>"+
+            "<br>"+
+            "<h3>El equipo de Cutie Plushie</h3>"+
+            "<img src='http://cutieplushie.azurewebsites.net/assets/images/cutie_plushie_logo.png' width='100'/>"+
+            "<br>"+
+            "<br>"+
+            "<h5>Este correo se envía exclusivamente al destinatario de la cuenta " + customerId + " desde una cuenta no monitoreada."+
+            " Ningún correo recibido en esta cuenta podrá ser respondido. Si tienes dudas, contáctanos a través de redes sociales o a través de"+
+            " contactocutieplushie@gmail.com.</h5>";
+
+
+          let mailResult = transporter.sendMail({
+            from: '"Cutie Plushie" <cutieplushie@gmail.com>', // sender address
+            to: customerId, // list of receivers
+            subject: "¡Bienvenido a Cutie Plushie! 🐼🦝", // Subject line
+            html: welcomeEmail // html body
+          });
   
           // Send records as a response
           res.send(true);
@@ -750,22 +788,25 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
   
       if (err){
         console.log(err);
+        res.send(err);
+        return;
       }
   
-      let customerMail = req.body.key;
+      let customerId = req.body.key;
       let inputPass = req.body.pwd;   // Previously encoded
   
       let request = new mssql.Request();
-      request.query("SELECT Customer_Name, Customer_Last_Name, Customer_Password FROM dbo.Customers WHERE Customer_ID = '" + customerMail + "';",
+      request.query("SELECT Customer_Name, Customer_Last_Name, Customer_Pass FROM dbo.Customers WHERE Customer_ID = '" + customerId + "';",
       function (err, records) {
         if (err){
           console.log(err);
           res.send(err);
+          return;
         }
   
         if(records.recordset.length === 1){
   
-          let customerPass = sjcl.decrypt("secretkey",records.recordset[0].Customer_Password);
+          let customerPass = sjcl.decrypt("secretkey",records.recordset[0].Customer_Pass);
   
           if(customerPass != inputPass){
             res.status(401).send("Unauthorized");
@@ -778,9 +819,9 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
           let options = {};
           options.expiresIn = 1800;
           let secret = "SECRET_KEY"
-          let token = jwt.sign({ customerKey }, secret, options);
+          let token = jwt.sign({ customerId }, secret, options);
           res.send({
-            customerMail: customerMail,
+            customerId: customerId,
             customerName: customerName,
             customerLastName:  customerLastName,
             token
@@ -917,6 +958,86 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
           // Send records as a response
           res.send(true);
           
+      });
+    });
+  });
+
+  // Update user (Password)
+  app.put('/api/v1/web/customers/', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+      if (err){
+        console.log(err);
+        res.send(err);
+        return;
+      }
+
+      let customerId = req.customer.customerId;
+      let customerName = req.customer.customerName;
+      let pwdOld = req.body.pwdOld;
+      let pwdNew = req.body.pwdNew;
+
+      query = "SELECT Customer_ID, Customer_Pass FROM dbo.Customers WHERE Customer_ID = '" + customerId + "';";
+      request.query(query,
+        function (err, records) {
+        if (err){
+          console.log(err);
+          res.send(err);
+          return;
+        }
+
+        let pwdCurrent = sjcl.decrypt("secretkey",records.recordset[0].Customer_Pass);
+
+        if(pwdCurrent != pwdOld){
+            res.status(403).send("Forbidden");
+            return;
+        }
+
+        pwdNew = sjcl.encrypt("secretkey",pwdNew);
+
+        // Request password change
+        request.query("UPDATE dbo.Customers SET " + 
+        "Customer_Pass = '" + pwdNew + "' " +
+        "WHERE Customer_ID = '" + customerId + "';", 
+        function (err, records) {
+          if (err){
+              console.log(err);
+              res.send(err);
+              return;
+          }
+
+          let welcomeEmail = 
+            "<h1>¡Hola " + customerName + "!</h1>"+
+            "<br>"+
+            "<h2>Tu contraseña de Cutie Plushie se ha cambiado con éxito.</h2>"+
+            "<h2>Haz clic <a href='cutieplushie.azurewebsites.net'>aquí</a> para ir a la tienda.</h2>"+
+            "<h2>Si no fuiste tú quien cambió la contraseña, por favor ponte en contacto inmediatamente con Cutie Plushie a través de contactocutieplushie@gmail.com</h2>"+
+            "<br>"+
+            "<h3>El equipo de Cutie Plushie</h3>"+
+            "<img src='http://cutieplushie.azurewebsites.net/assets/images/cutie_plushie_logo.png' width='100'/>"+
+            "<br>"+
+            "<br>"+
+            "<h5>Este correo se envía exclusivamente al destinatario de la cuenta " + customerId + " desde una cuenta no monitoreada."+
+            " Ningún correo recibido en esta cuenta podrá ser respondido. Si tienes dudas, contáctanos a través de redes sociales o a través de"+
+            " contactocutieplushie@gmail.com.</h5>";
+
+
+          let mailResult = transporter.sendMail({
+            from: '"Cutie Plushie" <cutieplushie@gmail.com>', // sender address
+            to: customerId, // list of receivers
+            subject: "¡Bienvenido a Cutie Plushie! 🐼🦝", // Subject line
+            html: welcomeEmail // html body
+          });
+  
+          // Send response if successful
+          let options = {};
+          options.expiresIn = 3600;
+          let secret = "SECRET_KEY"
+          let token = jwt.sign({ customerId }, secret, options);
+          res.send({
+              customerId: customerId,
+              token
+          });
+        });
       });
     });
   });
