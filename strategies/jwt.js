@@ -22,7 +22,7 @@ module.exports = new JwtStrategy(opts, function(jwt_payload, done){
     
         let request = new mssql.Request();
         let query;
-        if(jwt_payload.userKey.length === 9 && !jwt_payload.userKey.includes('@')){
+        if(jwt_payload.userKey != null && jwt_payload.userKey.length === 9 && !jwt_payload.userKey.includes('@')){
             query = "SELECT * FROM dbo.Users WHERE User_ID = '" + jwt_payload.userKey + "';";
             request.query(query,
               function (err, records) {
@@ -44,7 +44,7 @@ module.exports = new JwtStrategy(opts, function(jwt_payload, done){
                 }
               }); 
         } else {
-            query = "SELECT * FROM dbo.Customers WHERE Customer_ID = '" + jwt_payload.userKey + "';";
+            query = "SELECT * FROM dbo.Customers WHERE Customer_ID = '" + jwt_payload.customerId + "';";
             request.query(query,
               function (err, records) {
                 if (err){

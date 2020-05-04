@@ -52,7 +52,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       }
 
       let request = new mssql.Request();
-      let customerId = req.customer.customerId;
+      let customerId = req.user.customerId;;
         
       // Query to the database and get the records
       request.query("SELECT * FROM Adresses "+
@@ -91,7 +91,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       }
 
       let request = new mssql.Request();
-      let customerId = req.customer.customerId;
+      let customerId = req.user.customerId;;
       let addressId = req.params.addressId;
         
       if(addressId.includes("=")){
@@ -203,11 +203,11 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       }
 
       let request = new mssql.Request();
-      let customerId = req.customer.customerId;
+      let customerId = req.user.customerId;;
         
       // Query to the database and get the records
       request.query("SELECT * FROM Cards "+
-      "WHERE Customer_ID = '" + customerId+ "';", function (err, records) {
+      "WHERE Customer_ID = '" + customerId+ "' AND Active = 1;", function (err, records) {
           
         if (err){
           console.log(err);
@@ -246,7 +246,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
 
       let request = new mssql.Request();
       let cardId = req.params.cardId;
-      let customerId = req.customer.customerId;
+      let customerId = req.user.customerId;;
 
       if(cardId.includes("=")){
         res.status(403).send("Forbidden");
@@ -326,7 +326,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       }
 
       let request = new mssql.Request();
-      let customerId = req.customer.customerId;
+      let customerId = req.user.customerId;;
 
       // Query to the database and get the records
       request.query("SELECT cp.Coupon_ID, c.Coupon_Description, c.Coupon_Discount_MXN, "+
@@ -496,111 +496,140 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
     });
   });
 
-  // Get orders by customer
+  /**
+   * 
+   * SERVICE: Get orders by customer
+   * 
+   */
   app.get('/api/v1/web/orders/', passport.authenticate('jwt', { session: false }), function (req, res) {
     mssql.connect(dataBaseConfig, function (err) {
       
       if (err){
         console.log(err);
+        res.send(err);
+        return;
       }
-  
+
       let request = new mssql.Request();
-      let customerId = req.customer.customerId;
-        
-      // Query to the database and get the records
-      request.query("SELECT o.Order_ID, o.Order_Status, o.Address_ID,"+
-          "a.Address_Street_Name, a.Address_Exterior_Number, a.Address_Interior_Number, a.Address_Residential_Area, a.Address_ZIP_Code, a.Address_State, a.Address_City,"+
-          "i.Payment_Date "+
-      "FROM ((dbo.Orders AS o INNER JOIN dbo.Addresses AS a ON o.Address_ID = a.Address_ID) "+
-       " INNER JOIN dbo.Invoices AS i ON o.Invoice_ID = i.Invoice_ID) "+
-      "WHERE o.Customer_ID = '" + customerId + "' "+
-      "ORDER BY o.Order_ID DESC;", 
-      function (err, records) {
-          
-          if (err){
-            console.log(err);
-            res.send(err);
-          }
-  
-        var orders = [];
-        var deliveries = [];
-        var products = [];
-        for(let order of records.recordset){
-          request.query("SELECT d.Delivery_ID, d.Delivery_Date, d.Expected_Arrival_Date, d.Actual_Arrival_Date, d.Distributor_ID, dist.Distributor_Name ",
-          "FROM dbo.Deliveries AS d INNER JOIN dbo.Distributors AS dist ON d.Distributor_ID = dist.Distributor_ID ",
-          "WHERE d.Order_ID = '" + order.Order_ID + "' ",
-          "ORDER BY d.Delivery_ID;", 
-          function (err, records) {
-            if (err){
-              console.log(err);
-              res.send(err);
-            }
-    
-            deliveries = [];
-            for(let delivery of records.recordset){
-              request.query("SELECT p.Product_ID, p.Product_Name, p.Product_Icon, pp.Articles "+
-              "FROM (SELECT COUNT(s.Sale_ID) AS Articles, ar.Product_ID "+
-              "FROM (dbo.Sales AS s INNER JOIN dbo.Articles AS ar ON s.Article_ID = ar.Article_ID) "+
-                "INNER JOIN dbo.Products AS p ON ar.Product_ID = p.Product_ID "+
-              "WHERE s.Delivery_ID = '" + delivery.Delivery_ID + "' "+
-              "GROUP BY ar.Product_ID, s.Delivery_ID) AS pp INNER JOIN dbo.Products AS p ON pp.Product_ID = p.Product_ID;", 
-              function (err, records) {
-                if (err){
-                  console.log(err);
-                  res.send(err);
-                }
-
-                products = []
-                for(let product of records.recordset){
-                  let productJSON = {
-                    productId: product.Product_ID,
-                    productName: product.Product_Name,
-                    productIcon: productProduct_Icon,
-                    count: product.Articles
-                  }
-                  product.push(productJSON);
-                }
-              });
-
-              let deliveryJSON = {
-                deliveryId: delivery.Delivery_ID,
-                deliveryDate: delivery.Delivery_Date,
-                expectedArrivalDate: delivery.Expected_Arrival_Date,
-                actualArrivalDate: delivery.Actual_Arrival_Date,
-                distributor: {
-                  distributorId: delivery.Distributor_ID,
-                  distributorName: delivery.Distributor_Name
-                },
-                products: products
-              }
-              deliveries.push(deliveryJSON);
-            }
-          });
-
-          let orderJSON = {
-            orderId: order.Order_ID,
-            orderStatus: order.Order_Status,
-            paymentDate: order.Payment_Date,
-            address: {
-              addressId: order.Address_ID,
-              addressStreetName: order.Address_Street_Name,
-              addressExteriorNumber: order.Address_Exterior_Number,
-              addressInteriorNumber: order.Address_Interior_Number,
-              addressResidentialArea: order.Address_Residential_Area,
-              addressZipCode: order.Address_ZIP_Code,
-              addressState: order.Address_State,
-              addressCity: order.address_City
-            },
-            deliveries: deliveries
-          }
-          orders.push(orderJSON)
-        }
-
-        res.send(orders);
-      });
+      getOrders(req, res, request)
     });
   });
+
+  function getProducts(res, request, delivery){
+    return new Promise(function(resolve){
+      request.query("SELECT p.Product_ID, p.Product_Name, p.Product_Icon, pp.Articles "+
+      "FROM (SELECT COUNT(s.Sale_ID) AS Articles, ar.Product_ID "+
+      "FROM (dbo.Sales AS s INNER JOIN dbo.Articles AS ar ON s.Article_ID = ar.Article_ID) "+
+        "INNER JOIN dbo.Products AS p ON ar.Product_ID = p.Product_ID "+
+      "WHERE s.Delivery_ID = '" + delivery.Delivery_ID + "' "+
+      "GROUP BY ar.Product_ID, s.Delivery_ID) AS pp INNER JOIN dbo.Products AS p ON pp.Product_ID = p.Product_ID;", 
+      function (err, records) {
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
   
+        products = []
+        for(let product of records.recordset){
+          let productJSON = {
+            productId: product.Product_ID,
+            productName: product.Product_Name,
+            productIcon: product.Product_Icon,
+            count: product.Articles
+          }
+          products.push(productJSON);
+        }
+        resolve(products);
+      });
+    });   
+  }
+
+  async function getDeliveries(res, request, order) {
+    return new Promise(function(resolve){
+      request.query("SELECT d.Delivery_ID, d.Delivery_Date, d.Expected_Arrival_Date, d.Actual_Arrival_Date, d.Distributor_ID, dist.Distributor_Name "+
+      "FROM dbo.Deliveries AS d INNER JOIN dbo.Distributors AS dist ON d.Distributor_ID = dist.Distributor_ID "+
+      "WHERE d.Order_ID = '" + order.Order_ID + "' "+
+      "ORDER BY d.Delivery_ID;", 
+      async function(err, deliveryRecords){
+        if (err){
+          console.log(err);
+          res.send(err);
+        }
+    
+        let deliveries = [];
+        let products = [];
+        for(let delivery of deliveryRecords.recordset){
+          await getProducts(res, request, delivery).then(function(res){products = res});
+          let deliveryJSON = {
+            deliveryId: delivery.Delivery_ID,
+            deliveryDate: delivery.Delivery_Date,
+            expectedArrivalDate: delivery.Expected_Arrival_Date,
+            actualArrivalDate: delivery.Actual_Arrival_Date,
+            distributor: {
+              distributorId: delivery.Distributor_ID,
+              distributorName: delivery.Distributor_Name
+            },
+            products: products
+          }
+          deliveries.push(deliveryJSON);
+        }
+        resolve(deliveries);
+      });
+    });
+  }
+  
+  async function getOrders(req, res, request) {
+
+    let customerId = req.user.customerId;
+      
+    // Query to the database and get the records
+    request.query("SELECT o.Order_ID, o.Order_Status, o.Address_ID,"+
+        "a.Address_Street_Name, a.Address_Exterior_Number, a.Address_Interior_Number, a.Address_Residential_Area, a.Address_ZIP_Code, a.Address_State, a.Address_City,"+
+        "i.Payment_Date "+
+    "FROM ((dbo.Orders AS o INNER JOIN dbo.Addresses AS a ON o.Address_ID = a.Address_ID) "+
+      " INNER JOIN dbo.Invoices AS i ON o.Invoice_ID = i.Invoice_ID) "+
+    "WHERE o.Customer_ID = '" + customerId + "' "+
+    "ORDER BY o.Order_ID DESC;", 
+    async function(err, orderRecords){
+      if (err){
+        console.log(err);
+        res.send(err);
+        return;
+      }
+  
+      var orders = [];
+      var deliveries = [];
+      for(let order of orderRecords.recordset){
+        await getDeliveries(res, request, order).then(function(res){deliveries = res});
+        let orderJSON = {
+          orderId: order.Order_ID,
+          orderStatus: order.Order_Status,
+          paymentDate: order.Payment_Date,
+          address: {
+            addressId: order.Address_ID,
+            addressStreetName: order.Address_Street_Name,
+            addressExteriorNumber: order.Address_Exterior_Number,
+            addressInteriorNumber: order.Address_Interior_Number,
+            addressResidentialArea: order.Address_Residential_Area,
+            addressZipCode: order.Address_ZIP_Code,
+            addressState: order.Address_State,
+            addressCity: order.Address_City
+          },
+          deliveries: deliveries
+        }
+        orders.push(orderJSON)
+      } 
+      res.send(orders);
+    });
+  }
+
+
+  /**
+   * 
+   * END OF SERVICE
+   * 
+   */
+
 
   // Get reviews by product
   app.get('/api/v1/web/reviews/:productId', function (req, res) {
@@ -608,6 +637,8 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       
       if (err){
         console.log(err);
+        res.send(err);
+        return;
       }
   
       let request = new mssql.Request();
@@ -626,6 +657,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         if (err){
           console.log(err);
           res.send(err);
+          return;
         }
 
         // Send records as a response
@@ -663,16 +695,21 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       
       if (err){
         console.log(err);
+        res.send(err);
+        return;
       }
+
+      let request = new mssql.Request();
   
       request.query("SELECT TOP 1 Address_ID FROM dbo.Addresses ORDER BY Address_ID DESC;", function (err, records) {
           
         if (err){
           console.log(err);
           res.send(err);
+          return;
         }
   
-        let request = new mssql.Request();
+        request = new mssql.Request();
   
         let addressId;
         if(records.recordset.length>0){
@@ -688,7 +725,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         let addressZipCode = req.body.zipCode;
         let addressState = req.body.state;
         let addressCity = req.body.city;
-        let customerId = req.customer.customerId;
+        let customerId = req.user.customerId;;
           
         // Query to the database and get the records
         request.query("INSERT INTO dbo.Addresses VALUES('" + 
@@ -706,6 +743,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
             if (err){
               console.log(err);
               res.send(err);
+              return;
             }
   
             // Send records as a response
@@ -713,6 +751,57 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
             
         });
       });
+    });
+  });
+
+  // Create new card
+  app.post('/api/v1/web/cards/', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+      
+      if (err){
+        console.log(err);
+        res.send(err);
+        return;
+      }
+
+      let request = new mssql.Request();
+      let cardId = req.body.cardNumber;
+      let cardholderName = req.body.cardholderName;
+      let cardExpirationDate = req.body.cardExpirationDate;
+      let addressStreetName = req.body.streetName;
+      let addressExteriorNumber = req.body.exteriorNumber;
+      let addressInteriorNumber = req.body.interiorNumber;
+      let addressResidentialArea = req.body.residentialArea;
+      let addressZipCode = req.body.zipCode;
+      let addressState = req.body.state;
+      let addressCity = req.body.city;
+      let customerId = req.user.customerId;
+        
+      // Query to the database and get the records
+      request.query("INSERT INTO dbo.Cards VALUES('" + 
+      cardId +  "','" + 
+      cardholderName +  "','" + 
+      cardExpirationDate +  "','" + 
+      addressStreetName + "','" + 
+      addressExteriorNumber + "','" + 
+      addressInteriorNumber + "','" + 
+      addressResidentialArea + "','" + 
+      addressZipCode + "','" + 
+      addressState + "','" + 
+      addressCity + "','" + 
+      customerId + "',1);", 
+      function (err, records) {
+          
+          if (err){
+            console.log(err);
+            res.send(err);
+            return;
+          }
+
+          // Send records as a response
+          res.send(true);
+          
+      });;
     });
   });
   
@@ -772,7 +861,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
           let mailResult = transporter.sendMail({
             from: '"Cutie Plushie" <cutieplushie@gmail.com>', // sender address
             to: customerId, // list of receivers
-            subject: "¡Bienvenido a Cutie Plushie! 🐼🦝", // Subject line
+            subject: "¡Bienvenido a Cutie Plushie! 🐼🦝🐱", // Subject line
             html: welcomeEmail // html body
           });
   
@@ -854,7 +943,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       let addressZipCode = req.body.zipCode;
       let addressState = req.body.state;
       let addressCity = req.body.city;
-      let customerId = req.customer.customerId;
+      let customerId = req.user.customerId;;
         
       // Query to the database and get the records
       request.query("UPDATE dbo.Addresses SET " + 
@@ -891,7 +980,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
   
       let request = new mssql.Request();
   
-      let customerId = req.customer.customerId;
+      let customerId = req.user.customerId;;
       let avatarId = req.body.avatarId;
   
       // Query to the database and get the records
@@ -936,7 +1025,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       let addressState = req.body.state;
       let addressCity = req.body.city;
       let active = req.body.active
-      let customerId = req.customer.customerId;
+      let customerId = req.user.customerId;
         
       // Query to the database and get the records
       request.query("UPDATE dbo.Cards SET " + 
@@ -946,7 +1035,8 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       "Billing_Address_Residential_Area = '" + addressResidentialArea + "', " + 
       "Billing_Address_ZIP_Code = '" + addressZipCode + "', " + 
       "Billing_Address_State = '" + addressState + "', " + 
-      "Billing_Address_City = '" + addressCity + "' " + 
+      "Billing_Address_City = '" + addressCity + "', " + 
+      "Active = '" + active + "' "+
       "WHERE Address_ID = '" + addressId + "' AND Customer_ID = '" + customerId +"';", 
       function (err, records) {
           
@@ -971,7 +1061,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
         return;
       }
 
-      let customerId = req.customer.customerId;
+      let customerId = req.user.customerId;;
       let customerName = req.customer.customerName;
       let pwdOld = req.body.pwdOld;
       let pwdNew = req.body.pwdNew;
