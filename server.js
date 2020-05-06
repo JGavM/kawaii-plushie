@@ -72,6 +72,36 @@ app.get('/api/v1/distributor/getavatars', function (req, res) {
 });
 
 /**
+   * -----------------------------------------
+   * Supplier API v1
+   * -----------------------------------------
+   */
+  
+    //Get Avatars
+    app.get('/api/v1/supplier/getavatars', function (req, res) {
+      mssql.connect(dataBaseConfig, function (err) {
+        
+        if (err){
+          console.log(err);
+        }
+    
+        let request = new mssql.Request();
+           
+        // query to the database and get the records
+        request.query('SELECT * FROM Avatars', function (err, records) {
+            
+            if (err){
+              console.log(err);
+            }
+    
+            // send records as a response
+            res.send(records);
+            
+        });
+      });
+    });
+
+/**
  * -----------------------------------------
  * Server start on port 8080
  * -----------------------------------------
