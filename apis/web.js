@@ -650,7 +650,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
           " c.Avatar_ID, a.Avatar_Path "+
       "FROM (dbo.Reviews AS r INNER JOIN dbo.Customers AS c ON r.Customer_ID = c.Customer_ID) "+
           "INNER JOIN dbo.Avatars AS a ON c.Avatar_ID = a.Avatar_ID "+
-      "WHERE r.Product_ID = '" + productId + "';"+
+      "WHERE r.Product_ID = '" + productId + "' AND r.Active = 1 "+
       "ORDER BY r.Review_Date DESC;", 
       function (err, records) {
           
@@ -919,6 +919,142 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       });
     });
   });
+
+  // Create new refund
+  app.post('/api/v1/web/refunds/', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+      
+      if (err){
+        console.log(err);
+        res.send(err);
+        return;
+      }
+
+      let request = new mssql.Request();
+  
+      request.query("SELECT TOP 1 Refund_ID FROM dbo.Refunds ORDER BY Refund_ID DESC;", function (err, records) {
+          
+        if (err){
+          console.log(err);
+          res.send(err);
+          return;
+        }
+  
+        let refundId;
+        if(records.recordset.length>0){
+          let latestId = records.recordset[0]["Refund_ID"];
+          refundId = getNextID(latestId, "re", 10);
+        } else {
+          refundId = "re00000000";
+        } 
+        let today = new Date();
+        let refundDate = today.getFullYear() + 
+                            ((today.getMonth()+1)>9?today.getMonth()+1:"0"+(today.getMonth()+1)) +
+                            (today.getDate()>9?today.getDate():"0"+today.getDate());
+        let articleId = req.body.articleId;
+        let addressId = req.body.addressId;
+        let customerId = req.user.customerId;
+
+        // Look for the distributor with less active deliveries
+        request.query("SELECT TOP 1 di.Distributor_ID, COUNT(de.Delivery_ID) AS total "+
+        "FROM dbo.Distributors AS di INNER JOIN dbo.Deliveries AS de ON di.Distributor_ID = de.Distributor_ID "+
+        "WHERE de.Actual_Arrival_Date IS NULL "+
+        "GROUP BY di.Distributor_ID "+
+        "ORDER BY total", function(err, records){
+
+          let distributorId;
+          if(records.recordset.length > 0){
+            distributorId = records.recordset[0]["Distributor_ID"];
+          } else {
+            distributorId = "d000000000";
+          }
+
+          // Query to the database and get the records
+          request.query("INSERT INTO dbo.Refunds VALUES('" + 
+          refundId +  "','" + 
+          "OPEN','" + 
+          refundDate + "','" + 
+          "','" + 
+          customerId + "','" + 
+          articleId + "','" + 
+          addressId + "','" + 
+          distributorId + "');", 
+          function (err, records) {
+              
+            if (err){
+              console.log(err);
+              res.send(err);
+              return;
+            }
+
+            // Send records as a response
+            res.send(true);              
+          });
+        })  
+      });
+    });
+  });
+
+  // Create new review
+  app.post('/api/v1/web/reviews/:productId', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+      
+      if (err){
+        console.log(err);
+        res.send(err);
+        return;
+      }
+
+      let request = new mssql.Request();
+  
+      request.query("SELECT TOP 1 Review_ID FROM dbo.Reviews ORDER BY Review_ID DESC;", function (err, records) {
+          
+        if (err){
+          console.log(err);
+          res.send(err);
+          return;
+        }
+  
+        request = new mssql.Request();
+  
+        let reviewId;
+        if(records.recordset.length>0){
+          let latestId = records.recordset[0]["Review_ID"];
+          reviewId = getNextID(latestId, "r", 10);
+        } else {
+          reviewId = "r000000000";
+        } 
+        let reviewValue = req.body.reviewValue;
+        let reviewComment = req.body.reviewComment;
+        let today = new Date();
+        let reviewDate = today.getFullYear() + 
+                            ((today.getMonth()+1)>9?today.getMonth()+1:"0"+(today.getMonth()+1)) +
+                            (today.getDate()>9?today.getDate():"0"+today.getDate());
+        let productId = req.params.productId;
+        let customerId = req.user.customerId;
+          
+        // Query to the database and get the records
+        request.query("INSERT INTO dbo.Reviews VALUES('" + 
+        reviewId +  "'," + 
+        reviewValue + ",'" + 
+        reviewComment + "','" + 
+        reviewDate + "','" + 
+        productId + "','" + 
+        customerId + "',1);", 
+        function (err, records) {
+            
+          if (err){
+            console.log(err);
+            res.send(err);
+            return;
+          }
+
+          // Send records as a response
+          res.send(true);           
+        });
+      });
+    });
+  });
     
   /**
    * PUT Methods
@@ -1066,7 +1202,9 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       let pwdOld = req.body.pwdOld;
       let pwdNew = req.body.pwdNew;
 
-      query = "SELECT Customer_ID, Customer_Pass FROM dbo.Customers WHERE Customer_ID = '" + customerId + "';";
+      let request = new mssql.Request();
+
+      let query = "SELECT Customer_ID, Customer_Pass FROM dbo.Customers WHERE Customer_ID = '" + customerId + "';";
       request.query(query,
         function (err, records) {
         if (err){
@@ -1131,5 +1269,154 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       });
     });
   });
+
+
+  /**
+   * 
+   * 
+   * SERVICE: Process a new purchase
+   * 
+   * This is left at the very end to place all the pieces in the same portion of the file. This is one hell of a service.
+   * 
+   */
+
+  app.post('api/v1/web/order', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, async function (err) {
+      if (err){
+        console.log(err);
+        res.send(err);
+        return;
+      }
+
+      let customerId = req.user.customerId;
+      let cardId = req.body.cardId;
+      let cardExpirationDate = req.body.cardExpirationDate;
+      let cardSecurityCode = req.body.cardCode;
+      
+      let addressId = req.body.addressId;
+      let products = req.body.products;
+      let couponId = req.body.couponId;
+
+      let billingAddress = {
+        addressStreetName: req.body.streetName,
+        addressExteriorNumber: req.body.exteriorNumber,
+        addressInteriorNumber: req.body.interiorNumber,
+        addressResidentialArea: req.body.residentialArea,
+        addressZipCode: req.body.zipCode,
+        addressState: req.body.state,
+        addressCity: req.body.city
+      }
+
+      let today = new Date();
+      let orderDate = today.getFullYear() + 
+                          ((today.getMonth()+1)>9?today.getMonth()+1:"0"+(today.getMonth()+1)) +
+                          (today.getDate()>9?today.getDate():"0"+today.getDate());
+
+      await getProductData(new mssql.Request(), products).then(function(fullProducts){products = fullProducts});
+      createInvoices(new mssql.Request(),products,couponId,billingAddress,orderDate)    
+    });
+  })
+
+  function getProductData(request, products){
+    return new Promise(function(resolve){
+      let query = "SELECT Product_ID, Product_Name, Product_Unit_Price_MXN, Product_Active_Discount FROM dbo.Products WHERE Product_ID = '";
+      for(let product of products){
+        query += product.productId + "' OR Product_ID = '";
+      }
+      query += "';";
+      request.query(query,
+        function(err,records){
+          let fullProducts = [];
+          for(let product of records.recordset){
+            let productQuantity;
+            for(let oProduct of products){
+              if(product.productId == oProduct.productId){
+                productQuantity = oProduct.productQuantity
+              }
+            }
+
+            let productJSON = {
+              productId: product.Product_ID,
+              productName: product.Product_Name,
+              productQuantity: productQuantity,
+              productUnitPriceMXN: product.Product_Unit_Price_MXN,
+              productActiveDiscount: product.Product_Active_Discount
+            }
+            fullProducts.push(productJSON);
+          }
+          resolve(products);    
+          }
+      )
+    });
+  }
+
+  function createInvoices(request,products,couponId,billingAddress,orderDate){
+    let query = "SELECT Coupon_Discount_MXN FROM dbo.Coupons WHERE Coupon_ID = '" + couponId + "';";
+    request.query(query,
+      function(err, records){
+        if (err){
+          console.log(err);
+          res.send(err);
+          return;
+        }
+
+        let xml = 
+        '<?xml version="1.0" standalone="yes"?>'+
+        '<invoice id="" date="'+orderDate+'">'+
+          '<company>'+
+            '<company_name>Cutie Plushie</company_name>'+
+            '<fiscal_address>'+
+              '<street_name>Calle El Vergel</street_name>'+
+              '<exterior_number>141<exterior_number>'+
+              '<residential_zone>Residencial El Refugio</residential_zone>'+
+              '<city>Querétaro</city>'+
+              '<zip_code>76146</zip_code>'+
+              '<state>Querétaro</state>'+
+            '</fiscal_address>'+
+            '<phone_number>4425481701</phone_number>'+
+            '<email>cutieplushie@gmail.com</email>'+
+          '</company>'+
+          '<billing_address>'+
+            '<street_name>'+billingAddress.addressStreetName+'</street_name>'+
+            '<exterior_number>'+billingAddress.addressExteriorNumber+'<exterior_number>'+
+            '<exterior_number>'+billingAddress.addressInteriorNumber+'<exterior_number>'+
+            '<zip_code>'+billingAddress.addressZipCode+'</zip_code>'+
+            '<state>'+billingAddress.addressState+'</state>'+
+            '<city>'+billingAddress.addressCity+'</city>'+
+          '</billing_address>'+
+          '<products>';
+        
+        let couponValue = records.recordset[0]["Coupon_Discount_MXN"];
+        let totalMXN = 0;
+        let subtotalMXN = 0;
+        let discount = 0;
+        let shipment = 100;
+        for(let product of products){
+          subtotalMXN += product.productQuantity * (product.productUnitPriceMXN * (1-(product.productActiveDiscount/100)));
+          xml += 
+          ''
+        }
+        totalMXN += subtotalMXN;
+
+        if(couponValue < 1){
+          discount = totalMXN * (1-couponValue);
+        } else {
+          discount = couponValue;
+        }
+        totalMXN -= discount;
+
+        shipment += subtotalMXN * 0.1;
+        if(shipment > 250){
+          shipment = 250;
+        }
+        totalMXN += shipment;
+      }
+    );
+  }
   
+  /**
+   * 
+   * END OF SERVICE
+   * 
+   */
 }
