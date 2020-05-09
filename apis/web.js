@@ -8,6 +8,7 @@
   * Setup for e-mail
   */
 const nodemailer = require('nodemailer');
+const encoding = 'base64';
 
 let transporter = nodemailer.createTransport({
   host: "smtp.sendgrid.net",
@@ -15,7 +16,7 @@ let transporter = nodemailer.createTransport({
   secure: false,
   auth: {
     user: 'azure_a214e14ba8753985d09407c99b042fc1@azure.com',
-    pass: 'Resurgam98*'//atob('UmVzdXJnYW05OCo=')
+    pass: console.log(Buffer.from('', encoding).toString())
   }
 });
 
