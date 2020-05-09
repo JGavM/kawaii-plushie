@@ -1291,32 +1291,58 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
 
       let customerId = req.user.customerId;
       let cardId = req.body.cardId;
-      let cardExpirationDate = req.body.cardExpirationDate;
-      let cardSecurityCode = req.body.cardCode;
-      
       let addressId = req.body.addressId;
       let products = req.body.products;
       let couponId = req.body.couponId;
 
-      let billingAddress = {
-        addressStreetName: req.body.streetName,
-        addressExteriorNumber: req.body.exteriorNumber,
-        addressInteriorNumber: req.body.interiorNumber,
-        addressResidentialArea: req.body.residentialArea,
-        addressZipCode: req.body.zipCode,
-        addressState: req.body.state,
-        addressCity: req.body.city
-      }
+      let billingAddress;
 
       let today = new Date();
       let orderDate = today.getFullYear() + 
                           ((today.getMonth()+1)>9?today.getMonth()+1:"0"+(today.getMonth()+1)) +
                           (today.getDate()>9?today.getDate():"0"+today.getDate());
 
+      await getCardData(new mssql.Request(),cardId,customerId).then(function(cardExpirationDate,address){
+        billingAddress = address;
+        if(cardExpirationDate == ''){
+          res.status(403).send('Forbidden');
+          return;
+        }
+        let month = cardExpirationDate.split('/')[0]
+        let year = cardExpirationDate.split('/')[1]
+        if(parseInt(today.getFullYear().substring(2))>=parseInt(year)){
+          if(parseInt((today.getMonth()+1)>=parseInt(month))){
+            res.status(409).send('Expired card');
+            return;
+          }
+        }
+      });
+
       await getProductData(new mssql.Request(), products).then(function(fullProducts){products = fullProducts});
-      createInvoices(new mssql.Request(),products,couponId,billingAddress,orderDate)    
+      createInvoices(new mssql.Request(),req.user,products,couponId,billingAddress,orderDate)    
     });
   })
+  
+  function getCardData(request,cardId,customerId){
+    return new Promise(function(resolve){
+      let query = "SELECT * FROM dbo.Cards WHERE Card_ID = '" + cardId + "' AND Customer_ID = '" + customerId + "';";
+      request.query(query,
+        function(err,records){
+          let cardExpirationDate = records.recordset[0]["Card_Expiration_Date"];
+          let billingAddress = {
+            addressStreetName: records.recordset[0]["Billing_Address_Street_Name"],
+            addressExteriorNumber: records.recordset[0]["Billing_Address_Exterior_Number"],
+            addressInteriorNumber: records.recordset[0]["Billing_Address_Interior_Number"],
+            addressResidentialArea: records.recordset[0]["Billing_Address_Residential_Area"],
+            addressZipCode: records.recordset[0]["Billing_Address_ZIP_Code"],
+            addressState: records.recordset[0]["Billing_Address_State"],
+            addressCity: records.recordset[0]["Billing_Address_City"]
+          }
+          resolve(cardExpirationDate,billingAddress);
+        }
+      ); 
+    });  
+  }
 
   function getProductData(request, products){
     return new Promise(function(resolve){
@@ -1351,7 +1377,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
     });
   }
 
-  function createInvoices(request,products,couponId,billingAddress,orderDate){
+  function createInvoices(request,user,products,couponId,billingAddress,orderDate){
     let query = "SELECT Coupon_Discount_MXN FROM dbo.Coupons WHERE Coupon_ID = '" + couponId + "';";
     request.query(query,
       function(err, records){
@@ -1363,7 +1389,7 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
 
         let xml = 
         '<?xml version="1.0" standalone="yes"?>'+
-        '<invoice id="" date="'+orderDate+'">'+
+        '<invoice date="'+orderDate+'">'+
           '<company>'+
             '<company_name>Cutie Plushie</company_name>'+
             '<fiscal_address>'+
@@ -1377,25 +1403,29 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
             '<phone_number>4425481701</phone_number>'+
             '<email>cutieplushie@gmail.com</email>'+
           '</company>'+
-          '<billing_address>'+
-            '<street_name>'+billingAddress.addressStreetName+'</street_name>'+
-            '<exterior_number>'+billingAddress.addressExteriorNumber+'<exterior_number>'+
-            '<exterior_number>'+billingAddress.addressInteriorNumber+'<exterior_number>'+
-            '<zip_code>'+billingAddress.addressZipCode+'</zip_code>'+
-            '<state>'+billingAddress.addressState+'</state>'+
-            '<city>'+billingAddress.addressCity+'</city>'+
-          '</billing_address>'+
+          '<customer>'+
+            '<full_name>'+user.customerName+' '+user.customerLastName+'</full_name>'+
+            '<billing_address>'+
+              '<street_name>'+billingAddress.addressStreetName+'</street_name>'+
+              '<exterior_number>'+billingAddress.addressExteriorNumber+'<exterior_number>'+
+              '<exterior_number>'+billingAddress.addressInteriorNumber+'<exterior_number>'+
+              '<zip_code>'+billingAddress.addressZipCode+'</zip_code>'+
+              '<state>'+billingAddress.addressState+'</state>'+
+              '<city>'+billingAddress.addressCity+'</city>'+
+            '</billing_address>'+
+          '</customer>'+
           '<products>';
+
         
         let couponValue = records.recordset[0]["Coupon_Discount_MXN"];
         let totalMXN = 0;
         let subtotalMXN = 0;
         let discount = 0;
         let shipment = 100;
+        let totalProducts = 0;
         for(let product of products){
           subtotalMXN += product.productQuantity * (product.productUnitPriceMXN * (1-(product.productActiveDiscount/100)));
-          xml += 
-          ''
+          totalProducts += products.productQuantity;
         }
         totalMXN += subtotalMXN;
 
@@ -1411,6 +1441,77 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
           shipment = 250;
         }
         totalMXN += shipment;
+
+        for(let product of products){
+          let delivery = (shipment/totalProducts);
+          let pDiscount = (product.productUnitPriceMXN * (product.productActiveDiscount/100))+(discount/totalProducts);
+          let netCost = (product.productUnitPriceMXN-pDiscount+delivery);
+          xml += 
+          '<product>'+
+            '<description>'+product.productName+'</description>'+
+            '<quantity>'+product.productQuantity+'</quantity>'+
+            '<unit_price>'+(product.productUnitPriceMXN/1.16).toFixed(2)+'</unit_price>'+
+            '<tax>'+(product.productUnitPriceMXN-(product.productUnitPriceMXN/1.16).toFixed(2))+'</tax>'+
+            '<discount>'+pDiscount.toFixed(2)+'</discount>'+
+            '<delivery>'+delivery.toFixed(2)+'</delivery>'+
+            '<net_cost>'+netCost+'</net_cost>'+
+          '</product>'
+        }
+        
+        xml += 
+          '</products>'+
+          '<payment>'+
+            '<date>'+orderDate+'</date>'+
+            '<payment_amount>'+totalMXN+'</payment_amount>'+
+            '<payment_method>Debit</payment_method>'+
+          '</payment>'+
+        '</invoice>';
+
+        let confirmEmail = 
+          "<h1>¡Hola " + user.customerName + "!</h1>"+
+          "<br>"+
+          "<h2>Te confirmamos que hemos recibido tu pedido con los siguientes productos:</h2>"+
+          function(){
+            let string = "<ul>";
+            for(product of products){
+              string += "<li>"+product.productName+" ("+product.productQuantity+")</li>";
+            } 
+            string += "</ul>";
+            return string;
+          }+
+          "<h2>¡Tus productos ya están en camino! Haz clic <a href='cutieplushie.azurewebsites.net'>aquí</a> para ver tu pedido.</h2>"+
+          "<h2>En este correo puedes encontrar adjunta tu factura en formato XML.</h2>"+
+          "<br>"+
+          "<h3>Cliente: "+user.customerName+" "+user.customerLastName+"</h3>"+
+          "<h3>Monto: "+totalMXN+"</h3>"+
+          "<h3>Fecha: "+orderDate+"</h3>"+
+          "<h3>Factura: "+invoiceId+"</h3>"+
+          "<br>"+
+          "<h2>¡Muchas gracias por tu compra!/h2>"+
+          "<br>"+
+          "<h2>Si no reconoces esta transacción, por favor ponte en contacto inmediatamente con Cutie Plushie a través de contactocutieplushie@gmail.com</h2>"+
+          "<br>"+
+          "<h3>El equipo de Cutie Plushie</h3>"+
+          "<img src='http://cutieplushie.azurewebsites.net/assets/images/cutie_plushie_logo.png' width='100'/>"+
+          "<br>"+
+          "<br>"+
+          "<h5>Este correo se envía exclusivamente al destinatario de la cuenta " + user.customerId + " desde una cuenta no monitoreada."+
+          " Ningún correo recibido en esta cuenta podrá ser respondido. Si tienes dudas, contáctanos a través de redes sociales o a través de"+
+          " contactocutieplushie@gmail.com.</h5>";
+
+
+        let mailResult = transporter.sendMail({
+          from: '"Cutie Plushie" <cutieplushie@gmail.com>', // sender address
+          to: user.customerId, // list of receivers
+          subject: "¡Muchas gracias por tu compra! 🐼🦝", // Subject line
+          html: confirmEmail, // html body
+          attachments: [
+            {   // utf-8 string as an attachment
+                filename: orderDate+"_"+invoiceId+'.xml',
+                content: xml
+            }
+          ]
+        });
       }
     );
   }
