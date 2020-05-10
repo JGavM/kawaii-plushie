@@ -171,6 +171,9 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
   
       let request = new mssql.Request();
       let avatarId = req.params.avatarId;
+      if(avatarId.includes("=")){
+        res.status(403).send("Forbidden");
+      }
          
       // Query to the database and get the records
       request.query("SELECT * FROM dbo.Avatars WHERE Avatar_ID = '" + avatarId + "';", function (err, records) {
@@ -334,6 +337,49 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
       "cp.Expiration_Date " +
       "FROM dbo.Coupons_Per_Customer AS cp INNER JOIN dbo.Coupons AS c ON cp.Coupon_ID = c.Coupon_ID " +
       "WHERE cp.Applied = 0 AND cp.Customer_ID = '" + customerId + "';", 
+      function (err, records) {
+          
+        if (err){
+          console.log(err);
+          res.send(err);
+          return;
+        }
+
+        // Send records as a response
+        let coupons = [];
+        for(let coupon of records.recordset){
+          couponJSON = {
+            couponId: coupon.Coupon_ID,
+            couponDescription: coupon.Coupon_Description,
+            couponDiscountMXN: coupon.Coupon_Discount_MXN
+          };
+          coupons.push(couponJSON);
+        }
+        res.send(coupons);
+      });
+    });
+  });
+
+  app.get('/api/v1/web/coupons/:couponId', passport.authenticate('jwt', { session: false }), function (req, res) {
+    mssql.connect(dataBaseConfig, function (err) {
+      
+      if (err){
+        console.log(err);
+      }
+
+      let request = new mssql.Request();
+      let customerId = req.user.customerId;
+      let couponId = req.params.couponId;
+
+      if(couponId.includes("=")){
+        res.status(403).send("Forbidden");
+      }
+
+      // Query to the database and get the records
+      request.query("SELECT cp.Coupon_ID, c.Coupon_Description, c.Coupon_Discount_MXN, "+
+      "cp.Expiration_Date " +
+      "FROM dbo.Coupons_Per_Customer AS cp INNER JOIN dbo.Coupons AS c ON cp.Coupon_ID = c.Coupon_ID " +
+      "WHERE cp.Coupon_ID = '" + couponId + "' AND cp.Applied = 0 AND cp.Customer_ID = '" + customerId + "';", 
       function (err, records) {
           
         if (err){
