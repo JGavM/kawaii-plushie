@@ -29,6 +29,39 @@ module.exports = function(app,mssql,sjcl,jwt,passport,dataBaseConfig){
  *  GET Methods
  */
 
+// Get categories
+app.get('/api/v1/management/categories/', passport.authenticate('jwt', { session: false }), function (req, res) {
+  mssql.connect(dataBaseConfig, function (err) {
+    
+    if (err){
+      console.log(err);
+    }
+
+    let request = new mssql.Request();
+    // Query to the database and get the records
+    request.query("SELECT	* FROM dbo.Categories;", 
+    function (err, records) {
+        
+      if (err){
+        console.log(err);
+        res.send(err);
+        return;
+      }
+
+      // Send records as a response
+      let categories = [];
+      for(let category of records.recordset){
+        categoryJSON = {
+          categoryId: category.Category_ID,
+          categoryName: category.Category_Name
+        };
+        categories.push(categoryJSON);
+      }
+      res.send(categories);
+    });
+  });
+});
+
 // Get distributors
 app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { session: false }), function (req, res) {
     mssql.connect(dataBaseConfig, function (err) {
@@ -45,12 +78,13 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
         if (err){
           console.log(err);
           res.send(err);
+          return;
         }
   
         // Send records as a response
         let distributors = [];
         for(let distributor of records.recordset){
-        distributorJSON = {
+          distributorJSON = {
             distributorId: distributor.Distributor_ID,
             distributorName: distributor.Distributor_Name,
             distributorContactName: distributor.Distributor_Contact_Name,
@@ -82,6 +116,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
         if (err){
           console.log(err);
           res.send(err);
+          return;
         }
   
         // Send records as a response
@@ -119,8 +154,8 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
       "SELECT p.Product_ID, p.Product_Name, p.Product_Description, p.Product_Unit_Price_MXN, p.Product_Icon, p.Active, p.Product_Active_Discount, p.Supplier_ID, p.Category_ID,"+
       "s.Supplier_Name, c.Category_Name "+
       "FROM (dbo.Products AS p INNER JOIN dbo.Suppliers AS s ON p.Supplier_ID = s.Supplier_ID) "+
-      "WHERE p.Active = 1 " +
       "INNER JOIN dbo.Categories AS c ON p.Category_ID = c.Category_ID "+
+      "WHERE p.Active = 1 " +
       "ORDER BY p.Product_ID " +
       "OFFSET " + offset + " * " + (page-1) + " ROWS FETCH NEXT " + offset + " ROWS ONLY;", 
       function (err, records) {
@@ -128,6 +163,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
           if (err){
             console.log(err);
             res.send(err);
+            return;
           }
   
           // Send records as a response
@@ -179,6 +215,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
           if (err){
             console.log(err);
             res.send(err);
+            return;
           }
   
           let products = [];
@@ -233,19 +270,20 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
           if (err){
             console.log(err);
             res.send(err);
+            return;
           }
   
           // Send records as a response
           let products = [];
-        for(let product of records.recordset){
-          productJSON = {
-            productId: product.Product_ID,
-            productName: product.Product_Name,
-            productActiveDiscount: product.Product_Active_Discount,
-            productSales: product.Sales,
-            category: {
-              categoryId: product.Category_ID,
-              categoryName: product.Category_Name,
+          for(let product of records.recordset){
+            productJSON = {
+              productId: product.Product_ID,
+              productName: product.Product_Name,
+              productActiveDiscount: product.Product_Active_Discount,
+              productSales: product.Sales,
+              category: {
+                categoryId: product.Category_ID,
+                categoryName: product.Category_Name,
             }
           };
           products.push(productJSON);
@@ -265,6 +303,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
   
       let request = new mssql.Request();
       let page = parseInt(req.query.page);  
+      let salesPerPage = parseInt(req.query.salesPerPage);  
       // Query to the database and get the records
       request.query("SELECT	s.Sale_ID, s.Order_ID, s.Sale_Applied_Discount, s.Sale_Date, s.Delivery_ID, "+
           "o.Customer_ID, o.Order_Status, "+
@@ -281,8 +320,8 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
           "INNER JOIN dbo.Categories AS cat ON p.Category_ID = cat.Category_ID) "+
           "INNER JOIN dbo.Deliveries AS d ON s.Delivery_ID = d.Delivery_ID "+
       "ORDER BY s.Order_ID, s.Sale_ID "+
-      "OFFSET 100 * " + (page-1) + " ROWS "+
-      "FETCH NEXT 100 ROWS ONLY;", 
+      "OFFSET " + salesPerPage + " * " + (page-1) + " ROWS "+
+      "FETCH NEXT " + salesPerPage + " ROWS ONLY;", 
       function (err, records) {
           
         if (err){
@@ -343,7 +382,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
       let request = new mssql.Request();
       let page = parseInt(req.query.page);  
       // Query to the database and get the records
-      request.query("SELECT	* FROM dbo.Suppliers;", 
+      request.query("SELECT	* FROM dbo.Suppliers WHERE Active = 1;", 
       function (err, records) {
           
         if (err){
@@ -359,8 +398,7 @@ app.get('/api/v1/management/distributors/', passport.authenticate('jwt', { sessi
             supplierName: supplier.Supplier_Name,
             supplierContactName: supplier.Supplier_Contact_Name,
             supplierPhoneNumber: supplier.Supplier_Phone_Number,
-            supplierMail: supplier.Supplier_Mail,
-            active: supplier.Active
+            supplierMail: supplier.Supplier_Mail
           };
           suppliers.push(supplierJSON);
         }

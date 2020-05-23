@@ -1,0 +1,44 @@
+<div class="form">
+    <h1 mat-dialog-title *ngIf="formType == 'Create'">Agregar distribuidor</h1>
+    <h1 mat-dialog-title *ngIf="formType == 'Update'">Actualizar distribuidor</h1>
+    <form [formGroup]="distributorForm">
+        <div class="form-group">
+            <label for="distributorName">Nombre del distribuidor*</label>
+            <input type="text" formControlName="distributorName" class="form-control" [ngClass]="{ 'is-invalid': submitted &&  distributorForm.controls.distributorName.invalid }" />
+            <div *ngIf="submitted &&  distributorForm.controls.distributorName.invalid" class="invalid-feedback">
+                <div *ngIf="submitted && distributorForm.controls.distributorName.errors.required">Por favor ingrese el nombre</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="distributorContactName">Nombre del contacto*</label>
+            <input type="text" formControlName="distributorContactName" class="form-control" [ngClass]="{ 'is-invalid': submitted &&  distributorForm.controls.distributorContactName.invalid }" />
+            <div *ngIf="submitted &&  distributorForm.controls.distributorContactName.invalid" class="invalid-feedback">
+                <div *ngIf="submitted && distributorForm.controls.distributorContactName.errors.required">Por favor ingrese el nombre del contacto</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="distributorPhoneNumber">Teléfono*</label>
+            <input type="text" formControlName="distributorPhoneNumber" class="form-control" [ngClass]="{ 'is-invalid': submitted &&  distributorForm.controls.distributorPhoneNumber.invalid }" />
+            <div *ngIf="submitted &&  distributorForm.controls.distributorPhoneNumber.invalid" class="invalid-feedback">
+                <div *ngIf="submitted && distributorForm.controls.distributorPhoneNumber.errors.required">Por favor introduzca el teléfono</div>
+                <div *ngIf="submitted && distributorForm.controls.distributorPhoneNumber.errors.minLength">Número telefónico inválido, debe ser de 10 dígitos</div>
+                <div *ngIf="submitted && distributorForm.controls.distributorPhoneNumber.errors.maxLength">Número telefónico inválido, debe ser de 10 dígitos</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="distributorMail">Correo electrónico*</label>
+            <input type="text" formControlName="distributorMail" class="form-control" [ngClass]="{ 'is-invalid': submitted &&  distributorForm.controls.distributorMail.invalid }" />
+            <div *ngIf="submitted &&  distributorForm.controls.distributorMail.invalid" class="invalid-feedback">
+                <div *ngIf="submitted && distributorForm.controls.distributorMail.errors.required">Por favor introduzca un correo electrónico</div>
+                <div *ngIf="submitted && distributorForm.controls.distributorMail.errors.email">Por favor introduzca una dirección válida</div>
+            </div>
+        </div>
+        <div class="form-buttons">
+            <button (click)="createDistributor()" class="btn-create" *ngIf="formType == 'Create'">Agregar</button>
+            <button (click)="updateDistributor()" class="btn-update" *ngIf="formType == 'Update'">Actualizar</button>
+            <button (click)="closeDialog()" class="btn-cancel">Cancelar</button>
+          </div>
+    </form>
+    
+</div>
+
