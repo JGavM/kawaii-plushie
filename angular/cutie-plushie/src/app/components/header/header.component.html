@@ -1,0 +1,135 @@
+<!-- HEADER -->
+<header>
+    <!-- MAIN HEADER -->
+    <div id="header">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+                <!-- LOGO -->
+                <div class="col-md-3">
+                    <div class="header-logo">
+                        <a routerLink="/home" class="logo">
+                            <img src="assets/img/logo-text.png" alt="" width="250" height="auto">
+                        </a>
+                    </div>
+                </div>
+                <!-- /LOGO -->
+
+                <!-- SEARCH BAR -->
+                <div class="col-md-5">
+                    <div class="header-search">
+                        <form>
+                            <input class="input" placeholder="Buscar">
+                            <button class="search-btn">Buscar</button>
+                        </form>
+                    </div>
+                </div>
+                <!-- /SEARCH BAR -->
+
+                <!-- ACCOUNT -->
+                <div class="col-md-4 clearfix">
+                    <div class="header-ctn">
+                        <!-- Account -->
+                        <div class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                                <i>
+                                    <img src="assets/img/user-logo.png" alt="" width="25" height="auto">
+                                </i>
+                            </a>
+                            <div class="user-dropdown">
+                                <div class="user-list">
+                                    <button class="primary-btn" routerLink="/login"> Iniciar Sesión</button>
+                                    <button class="primary-btn" routerLink="/register">Registrarse</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /Account -->
+
+                        <!-- Cart -->
+                        <div class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                                <i>
+                                    <img src="assets/img/shopping-bag.png" alt="" width="25" height="auto">
+                                </i>
+                                <div class="qty">3</div>
+                            </a>
+                            <div class="cart-dropdown">
+                                <div class="cart-list">
+                                    <div class="product-widget">
+                                        <div class="product-img">
+                                            <img src="assets/img/product01.png" alt="">
+                                        </div>
+                                        <div class="product-body">
+                                            <h3 class="product-name"><a routerLink="/product/:id">Producto 1</a></h3>
+                                            <h4 class="product-price"><span class="qty">1x</span>$249.00</h4>
+                                        </div>
+                                        <button class="delete"><i class="fa fa-close"></i></button>
+                                    </div>
+
+                                    <div class="product-widget">
+                                        <div class="product-img">
+                                            <img src="assets/img/product02.png" alt="">
+                                        </div>
+                                        <div class="product-body">
+                                            <h3 class="product-name"><a routerLink="/product/:id">Producto 1</a></h3>
+                                            <h4 class="product-price"><span class="qty">2x</span>$199.00</h4>
+                                        </div>
+                                        <button class="delete"><i class="fa fa-close"></i></button>
+                                    </div>
+                                </div>
+                                <div class="cart-summary">
+                                    <small>3 producto(s) seleccionados</small>
+                                    <h5>SUBTOTAL: $627.00</h5>
+                                </div>
+                                <div class="cart-btns">
+                                    <a routerLink="/shopping-cart">Ver carrito</a>
+                                    <a routerLink="/payment">Pagar<i class="fa fa-arrow-circle-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /Cart -->
+
+                        <!-- SEARCH BAR -->
+							<div class="header-search">
+								<form>
+									<select class="input-select">
+										<option value="0"><span class="flags flags-Mexico"></span> &nbsp;MXN</option>
+										<option value="1">USD</option>
+									</select>
+								</form>
+							</div>
+                        <!-- /SEARCH BAR -->
+                        
+                    </div>
+                </div>
+                <!-- /ACCOUNT -->
+            </div>
+            <!-- row -->
+        </div>
+        <!-- container -->
+    </div>
+    <!-- /MAIN HEADER -->
+</header>
+<!-- /HEADER -->
+<!-- NAVIGATION -->
+<nav id="navigation">
+    <!-- container -->
+    <div class="container">
+        <!-- responsive-nav -->
+        <div id="responsive-nav">
+            <!-- NAV -->
+            
+            <ul class="main-nav nav py-3">
+                <li><a>Categorias</a></li>
+                <li><a routerLink="/categories-page">Lo más nuevo</a></li>
+                <li><a routerLink="/categories-page">Lo más vendido</a></li>
+            </ul> 
+            <!-- /NAV -->
+        </div>
+        <!-- /responsive-nav -->
+    </div>
+    <!-- /container -->
+</nav>
+<!-- /NAVIGATION -->
+
