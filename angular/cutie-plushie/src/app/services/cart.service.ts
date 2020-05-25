@@ -1,10 +1,9 @@
 import {Injectable} from '@angular/core';
-import { ProductsService } from 'src/app/web/services/products.service';
+import { ProductsService } from 'src/app/services/products.service';
 import {BehaviorSubject} from "rxjs";
 import {CartModelPublic, CartModelServer} from "../models/cart.model";
 import {ProductModelServer} from "../models/products.model";
 import {HttpClient} from "@angular/common/http";
-import {environment} from "src/environments/environment";
 import {NavigationExtras, Router} from "@angular/router";
 import {OrderService} from "./order.service";
 import {NgxSpinnerService} from "ngx-spinner";
